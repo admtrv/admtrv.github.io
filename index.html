@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Anton Dmitriev | @admtrv </title>
-    <link rel="stylesheet" href="styles.css">
+    <title> Home </title>
+    <link rel="stylesheet" href="/media/css/styles.css">
+    <script src="media/js/script.js"></script>
 </head>
 <body>
-    <div class="outercontainer">
+    <!-- Main Container -->
+    <div class="container">
+        
+        <!-- Button Bar Container -->
         <div class="links">
-            <a href="/projects">Projects</a>
+            <a href="#" onclick="loadContent('projects.html', 'Projects')">Projects</a>
              . 
-            <a href="/publications">Publications</a>
+             <a href="#" onclick="loadContent('publications.html', 'Publications')">Publications</a>
              . 
-            <a href="/about">About</a>
+            <a href="#" onclick="loadContent('about.html', 'About')">About</a>
              . 
             <a href="https://github.com/admtrv" target="_blank">GitHub</a>
              . 
@@ -21,6 +25,14 @@
              . 
             <a href="https://www.instagram.com/admtrv/" target="_blank">Instagram</a>
         </div>
+        
+        <hr>
+	   
+	   <!-- Main Content Container -->
+        <div id="content">    
+            <!-- Loads Here -->
+        </div>
+        
     </div>
 </body>
 </html>

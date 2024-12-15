@@ -1,0 +1,88 @@
+@font-face {
+    font-family: "Mononoki";
+    src: url("media/fonts/mononoki-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Mononoki";
+    src: url("media/fonts/mononoki-Bold.ttf") format("truetype");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Mononoki";
+    src: url("media/fonts/mononoki-Italic.ttf") format("truetype");
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Mononoki";
+    src: url("media/fonts/mononoki-BoldItalic.ttf") format("truetype");
+    font-weight: bold;
+    font-style: italic;
+}
+
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #a9a9a9;
+    color: #101010;
+    font-family: 'Mononoki', monospace;
+    font-weight: lighter;
+    font-size: 15px;
+    letter-spacing: 0.3px;
+    line-height: 200%;
+}
+
+.container {
+    border: 3px solid rgb(30, 104, 122);
+    margin-left: auto;
+    margin-right: auto;
+    width: 830px;
+    background-color: rgb(240, 240, 240);
+    text-align: left;
+    padding: 20px;
+}
+
+.links {
+    margin-top: 25px;
+    margin-bottom: 25px;
+    text-align: center;
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+.links a {
+    color: #000000;
+    text-decoration: underline;
+
+}
+
+.links a:hover {
+    color: #246978;
+    text-decoration: underline;
+}
+
+#content {
+    text-align: left;
+}
+
+h1 {
+    font-weight: lighter;
+    margin: 10px;
+    margin-bottom: 40px;
+    padding: 0px;
+}
+
+hr {
+  border: 0px; 
+  height: 3px;
+  background-color: rgb(30, 104, 122);
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
