@@ -1,31 +1,30 @@
 @font-face {
     font-family: "Mononoki";
-    src: url("media/fonts/mononoki-Regular.ttf") format("truetype");
+    src: url('/media/fonts/mononoki-Regular.ttf');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: "Mononoki";
-    src: url("media/fonts/mononoki-Bold.ttf") format("truetype");
+    src: url('/media/fonts/mononoki-Bold.ttf');
     font-weight: bold;
     font-style: normal;
 }
 
 @font-face {
     font-family: "Mononoki";
-    src: url("media/fonts/mononoki-Italic.ttf") format("truetype");
+    src: url('/media/fonts/mononoki-Italic.ttf');
     font-weight: normal;
     font-style: italic;
 }
 
 @font-face {
     font-family: "Mononoki";
-    src: url("media/fonts/mononoki-BoldItalic.ttf") format("truetype");
+    src: url('/media/fonts/mononoki-BoldItalic.ttf');
     font-weight: bold;
     font-style: italic;
 }
-
 
 html, body {
     margin: 0;
@@ -34,12 +33,12 @@ html, body {
     color: #101010;
     font-family: 'Mononoki', monospace;
     font-weight: lighter;
-    font-size: 15px;
+    font-size: 16px;
     letter-spacing: 0.3px;
     line-height: 200%;
 }
 
-.container {
+.outercontainer {
     border: 3px solid rgb(30, 104, 122);
     margin-left: auto;
     margin-right: auto;
@@ -47,6 +46,9 @@ html, body {
     background-color: rgb(240, 240, 240);
     text-align: left;
     padding: 20px;
+}
+
+.innercontainer {
 }
 
 .links {
@@ -65,11 +67,14 @@ html, body {
 
 .links a:hover {
     color: #246978;
-    text-decoration: underline;
 }
 
 #content {
     text-align: left;
+    margin-top: 25;
+    margin-left: 50;
+    margin-right: 50;
+    margin-bottom: 50;
 }
 
 h1 {
