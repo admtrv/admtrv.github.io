@@ -40,12 +40,12 @@ html, body {
 
 .outercontainer {
     border: 3px solid rgb(30, 104, 122);
-    margin-left: auto;
-    margin-right: auto;
+    margin: 20px auto;
+    padding: 20px;
     width: 830px;
     background-color: rgb(240, 240, 240);
     text-align: left;
-    padding: 20px;
+    box-sizing: border-box;
 }
 
 .innercontainer {
@@ -67,6 +67,10 @@ html, body {
 
 .links a:hover {
     color: #246978;
+}
+
+.links a.active {
+    font-weight: bold;
 }
 
 #content {
