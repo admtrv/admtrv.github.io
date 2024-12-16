@@ -38,7 +38,7 @@ html, body {
     line-height: 200%;
 }
 
-.outercontainer {
+.outer-container {
     border: 3px solid rgb(30, 104, 122);
     margin: 20px auto;
     padding: 20px;
@@ -46,9 +46,6 @@ html, body {
     background-color: rgb(240, 240, 240);
     text-align: left;
     box-sizing: border-box;
-}
-
-.innercontainer {
 }
 
 .links {
@@ -73,7 +70,7 @@ html, body {
     font-weight: bold;
 }
 
-#content {
+.content {
     text-align: left;
     margin-top: 25;
     margin-left: 50;

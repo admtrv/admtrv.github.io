@@ -1,40 +1,21 @@
-function loadContent(page, title) {
-    fetch(`media/content/${page}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.text();
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/media/content/header.html')
+        .then(response => response.text())
+        .then(headerHtml => {
+            document.getElementById('header-container').innerHTML = headerHtml;
+            setActiveLink();
         })
-        .then(html => {
-            document.getElementById('content').innerHTML = html;
-            document.title = title;
-            
-            setActiveLink(page);
-        })
-        .catch(error => {
-            console.error('Error fetching content:', error);
-            document.getElementById('content').innerHTML = `<p>Failed to load content: ${error}</p>`;
-        });
-}
+        .catch(error => console.error('Error loading header:', error));
+});
 
-function setActiveLink(activePage) {
-    const links = document.querySelectorAll('.links a');
+function setActiveLink() {
+    const activeSection = document.body.dataset.section;
+
+    const links = document.querySelectorAll('.links a[data-section]');
     links.forEach(link => {
         link.classList.remove('active');
-        
-        if (link.getAttribute('onclick')?.includes(activePage)) {
+        if (link.dataset.section === activeSection) {
             link.classList.add('active');
         }
     });
 }
-
-document.addEventListener('click', (event) => {
-    if (event.target.closest('.links a')) {
-        event.target.blur();
-    }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadContent('home.html', 'Home');
-});

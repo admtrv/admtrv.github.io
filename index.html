@@ -2,38 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title> Home </title>
+    <title>Home</title> <!-- Title Name -->
     <link rel="stylesheet" href="/media/css/styles.css">
-    <script src="media/js/script.js"></script>
+    <script src="/media/js/script.js" defer></script>
 </head>
-<body>
-    <!-- Main Container -->
-    <div class="outercontainer">
-    <div class="innercontainer">
-        
-        <!-- Button Bar Container -->
-        <div class="links">
-            <a href="#" onclick="loadContent('projects.html', 'Projects')" data-section="projects" >Projects</a>
-             . 
-            <a href="#" onclick="loadContent('publications.html', 'Publications')" data-section="publications" >Publications</a>
-             . 
-            <a href="#" onclick="loadContent('about.html', 'About')" data-section="about" >About</a>
-             . 
-            <a href="https://github.com/admtrv" target="_blank">GitHub</a>
-             . 
-            <a href="https://www.linkedin.com/in/admtrv/" target="_blank">LinkedIn</a>
-             . 
-            <a href="https://www.instagram.com/admtrv/" target="_blank">Instagram</a>
+
+<body data-section="home">  <!-- Section Name -->
+    <div class="outer-container">
+        <div class="inner-container">
+            <div id="header-container"></div>
+            
+            <div id="content"> <!-- Content -->
+                <h1>Home</h1>
+            </div>
         </div>
-        
-        <hr>
-	   
-	   <!-- Main Content Container -->
-        <div id="content">    
-            <!-- Loads Here -->
-        </div>
-        
-    </div>
     </div>
 </body>
 </html>
