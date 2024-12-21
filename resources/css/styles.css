@@ -26,24 +26,32 @@
     font-style: italic;
 }
 
+:root {
+    --primary-color: #246978;
+    --secondary-color: #f2da72;
+    --primary-background-color: #f0f0f0;
+    --secondary-background-color: #a9a9a9;
+    --text-color: #101010;
+}
+
 html, body {
     margin: 0;
     padding: 0;
-    background-color: #a9a9a9;
-    color: #101010;
+    background-color: var(--secondary-background-color);
+    color: var(--text-color);
     font-family: 'Mononoki', monospace;
     font-weight: lighter;
-    font-size: 16px;
+    font-size: 14px;
     letter-spacing: 0.3px;
     line-height: 200%;
 }
 
 .outer-container {
-    border: 3px solid rgb(30, 104, 122);
+    border: 3px solid var(--primary-color);
     margin: 20px auto;
     padding: 20px;
     width: 830px;
-    background-color: rgb(240, 240, 240);
+    background-color: var(--primary-background-color);
     text-align: left;
     box-sizing: border-box;
 }
@@ -57,13 +65,13 @@ html, body {
 }
 
 .links a {
-    color: #000000;
+    color: var(--text-color);
     text-decoration: underline;
 
 }
 
 .links a:hover {
-    color: #246978;
+    color: var(--primary-color);
 }
 
 .links a.active {
@@ -78,6 +86,19 @@ html, body {
     margin-bottom: 50;
 }
 
+.no-style {
+    text-decoration: none;
+    color: inherit;
+}
+
+.no-style:hover {
+    color: var(--primary-color);
+}
+
+img, video{
+    border: 3px solid var(--primary-color);
+}
+
 h1 {
     font-weight: lighter;
     margin: 10px;
@@ -88,7 +109,7 @@ h1 {
 hr {
   border: 0px; 
   height: 3px;
-  background-color: rgb(30, 104, 122);
+  background-color: var(--primary-color);
   margin-top: 50px;
   margin-bottom: 50px;
 }
