@@ -118,4 +118,6 @@ hr {
     margin: 0 auto;
     text-align: center;
     line-height:100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
 }

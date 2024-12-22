@@ -6,7 +6,7 @@ const animationDeltaTime = 0.005
 
 const animationAsciiPallet = [
     "rgb",
-    "`'-.,_,.-'`",
+    "\\ /",
     "0 1 2 3 4 5 6 7 8 9",
     "@%#+=*:-. ",
     "xyz",
@@ -23,7 +23,7 @@ const animationAsciiPallet = [
     "awk",
     ":) :( :D :P",
     " -~",
-    "\\ /",
+    "`'-.,_,.-'`",
     "s S $",
     ". o O Q q .",
     "  ..zzZZ",
