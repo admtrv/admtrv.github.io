@@ -1,3 +1,5 @@
+/* styles.css */
+
 @font-face {
     font-family: "Mononoki";
     src: url('/resources/fonts/mononoki-Regular.ttf');
@@ -27,63 +29,76 @@
 }
 
 :root {
-    --primary-color: #246978;
-    --secondary-color: #f2da72;
-    --primary-background-color: #f0f0f0;
-    --secondary-background-color: #a9a9a9;
-    --text-color: #101010;
+    --color-primary: #246978;
+    --color-secondary: #f2da72;
+
+    --bg-page: #a9a9a9;
+    --bg-section: #f0f0f0;
+
+    --text-primary: #101010;
 }
 
-html, body {
+#animation {
+    font-family:"Mononoki", monospace;
+    white-space:pre;
+    display: block;
+    margin: 0 auto;
+    line-height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+html {
+    font-size: 14px;
+}
+
+body {
     margin: 0;
     padding: 0;
-    background-color: var(--secondary-background-color);
-    color: var(--text-color);
+    background-color: var(--bg-page);
+    color: var(--text-primary);
     font-family: 'Mononoki', monospace;
-    font-weight: lighter;
-    font-size: 14px;
     letter-spacing: 0.3px;
     line-height: 200%;
 }
 
+hr {
+    width: 100%;
+    border-top: 3px solid var(--color-primary);
+    margin: 30px 0;
+}
+
 .outer-container {
-    border: 3px solid var(--primary-color);
+    border: 3px solid var(--color-primary);
     margin: 20px auto;
     padding: 50px;
     width: 830px;
-    background-color: var(--primary-background-color);
+    background-color: var(--bg-section);
     text-align: left;
     box-sizing: border-box;
 }
 
-.links {
-    margin-top: 25px;
-    margin-bottom: 25px;
+.nav-links {
+    margin: 25px 50px;
     text-align: center;
-    margin-left: 50px;
-    margin-right: 50px;
 }
 
-.links a {
-    color: var(--text-color);
+.nav-links a {
+    color: var(--text-primary);
     text-decoration: underline;
-
 }
 
-.links a:hover {
-    color: var(--primary-color);
+.nav-links a:hover {
+    color: var(--color-primary);
 }
 
-.links a.active {
+.nav-links a.active {
     font-weight: bold;
 }
 
 .content {
+    margin: 25px 50px 50px;
     text-align: left;
-    margin-top: 25;
-    margin-left: 50;
-    margin-right: 50;
-    margin-bottom: 50;
 }
 
 .no-style {
@@ -92,32 +107,22 @@ html, body {
 }
 
 .no-style:hover {
-    color: var(--primary-color);
+    color: var(--color-primary);
 }
 
-img, video{
-    border: 3px solid var(--primary-color);
+.img-right {
+    float: right;
+    margin-left: 10px;
+    border: 3px solid var(--color-primary);
 }
 
-h1 {
-    font-weight: lighter;
-    margin-bottom: 30px;
-    padding: 0px;
+.img-left {
+    float: left;
+    margin-right: 10px;
+    border: 3px solid var(--color-primary);
 }
 
-hr {
-  border: 0px; 
-  height: 3px;
-  background-color: var(--primary-color);
-  margin-top: 30px;
-  margin-bottom: 30px;
-}
-
-#animation {
-    display: block;
-    margin: 0 auto;
-    text-align: center;
-    line-height:100%;
-    overflow-x: hidden;
-    overflow-y: hidden;
+.card {
+    text-decoration: none;
+    color: inherit;
 }

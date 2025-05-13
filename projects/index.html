@@ -1,25 +1,70 @@
+<!-- projects/index.html -->
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Projects</title>
-    <link rel="icon" href="/resources/images/common/icon.ico" type="image/x-icon">
+    <link rel="icon" href="/resources/images/icons/icon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/resources/css/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/resources/js/scripts.js" defer></script>
 </head>
 
 <body data-section="projects">
     <div class="outer-container">
-        <div class="inner-container">
-            <div id="header-container"></div>
 
-            <div id="content">
-                <h1>Projects</h1>
-                <p>
-                    This page dedicated to showcasing my personal and collaborative projects.
-                </p>
-            </div>
-        </div>
+            <header id="header-container"></header>
+            
+            <section id="content">
+
+                <a href="/projects/hellopeer/index.html" class="card">
+                    <article>
+                        <img class="img-right" src="./hellopeer/hellopeer.png" alt="HelloPeer Start" width="300" />
+                        <div>
+                            <h2>HelloPeer!</h2>
+                            <p>
+                                A p2p application written in C++ for message exchange between two nodes on a local Ethernet network. It uses a custom UDP-based protocol with mechanisms for reliable data transfer between devices acting as both senders and receivers.
+                            </p>
+                        </div>
+                    </article>
+                </a>
+                
+
+                <hr>
+
+                <a href="/projects/playroom/index.html" class="card">
+                    <article>
+                        <img class="img-left" src="./playroom/playroom.png" alt="Graphic Demo Preview" width="320" />
+                        <div>
+                            <h2>Playroom Graphic Demo</h2>
+                            <p>
+                                A 3D interactive graphics demo made in C++ with OpenGL. It simulates a playroom with animated lighting, post-processing, procedural outdoors, and interactive physics-based games like billiards and darts.
+                            </p>
+                        </div>
+                    </article>
+                </a>
+                
+
+                <hr>
+
+                <a href="/projects/raycaster/index.html" class="card">
+                    <article>
+                        <img class="img-right" src="./raycaster/demo.gif" alt="Raycaster Demo" width="320"/>
+                        <div>
+                            <h2>CLI Raycaster</h2>
+                            <p>
+                                Command-line raycasting visualization written in pure C using the curses library. Created for educational purposes to explore the classic technique of simulating fake 3D used in early games like Wolfenstein 3D.
+                            </p>
+                        </div>
+                    </article>
+                </a>
+
+            </section>
+
+
     </div>
 </body>
+
 </html>

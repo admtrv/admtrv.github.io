@@ -1,5 +1,9 @@
+/*
+ * scripts.js
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
-    fetch('/header.html')
+    fetch('/components/header.html')
         .then(response => response.text())
         .then(headerHtml => {
             document.getElementById('header-container').innerHTML = headerHtml;
@@ -13,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setActiveSection() {
     const activeSection = document.body.dataset.section;
-    const links = document.querySelectorAll('.links a[data-section]');
+    const links = document.querySelectorAll('.nav-links a[data-section]');
 
     links.forEach(link => {
         link.classList.remove('active');

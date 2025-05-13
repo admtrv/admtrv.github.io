@@ -1,3 +1,7 @@
+/*
+ * animation.js
+ */
+
 const animationWidth = 90;
 const animationHeight = 9;
 
@@ -20,7 +24,7 @@ const animationAsciiPallet = [
     "hello world!",
     " 011 010 101 ",
     "sed",
-    "awk",
+    "lol",
     ":) :( :D :P",
     " -~",
     "`'-.,_,.-'`",
