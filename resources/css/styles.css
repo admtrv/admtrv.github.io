@@ -34,6 +34,7 @@
 
     --bg-page: #a9a9a9;
     --bg-section: #f0f0f0;
+    --bg-code: #ffffff;
 
     --text-primary: #101010;
 }
@@ -66,6 +67,19 @@ hr {
     width: 100%;
     border-top: 3px solid var(--color-primary);
     margin: 30px 0;
+}
+
+code {
+    background-color: var(--bg-code);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-size: 1em;
+    color: var(--text-primary);
+}
+
+pre code {
+    border: 3px solid var(--color-primary);
+    border-radius: 0px;
 }
 
 .outer-container {
