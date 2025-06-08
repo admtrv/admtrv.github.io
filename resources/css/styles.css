@@ -37,6 +37,7 @@
     --bg-code: #ffffff;
 
     --text-primary: #101010;
+    --text-secondary: #666666;
 }
 
 #animation {
@@ -78,6 +79,11 @@ code {
 }
 
 pre code {
+    border: 3px solid var(--color-primary);
+    border-radius: 0px;
+}
+
+img {
     border: 3px solid var(--color-primary);
     border-radius: 0px;
 }
@@ -127,16 +133,27 @@ pre code {
 .img-right {
     float: right;
     margin-left: 10px;
-    border: 3px solid var(--color-primary);
 }
 
 .img-left {
     float: left;
     margin-right: 10px;
-    border: 3px solid var(--color-primary);
 }
 
 .card {
     text-decoration: none;
     color: inherit;
+    min-height: 155px;
 }
+
+.card time {
+    display: block;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.author {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+  

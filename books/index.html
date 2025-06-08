@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Books</title>
@@ -10,18 +11,37 @@
     <link rel="stylesheet" href="/resources/css/styles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/resources/js/scripts.js" defer></script>
+    <script src="/resources/js/card.js"></script>
 </head>
 
 <body data-section="books">
     <div class="outer-container">
 
-            <header id="header-container"></header>
-            
-            <section id="content">
+        <header id="header-container"></header>
 
-            </section>
+        <section id="content">
 
-        </div>
+            <book-card
+                title="Computer Graphics and the C Language"
+                author="Branislav Sobota"
+                review="It's old and a bit outdated, but it helped me delve deeper into computer graphics. It played a significant role in writing my own graphic projects."
+                image="sobota/sobota.webp"
+                alt="Computer Graphics and the C Language Cover">
+            </book-card>
+
+            <hr>
+
+            <book-card
+                title="Do Androids Dream Of Electric Sheep?"
+                author="Philip K. Dick"
+                review="First fiction book I read as an adult that wasn’t some manual or textbook, and I actually enjoyed it.  If you're into Blade Runner, you’ll probably like this too - the original story."
+                image="androids/sheep.png"
+                alt="Do Androids Dream Of Electric Sheep? Cover">
+            </book-card>
+
+        </section>
+
+    </div>
 </body>
 
 </html>

@@ -1,13 +1,37 @@
 <!-- components/card.html -->
 
-<template id="card-template">
+<template id="project-card-template">
   <a class="card">
     <article>
       <img class="img-right" height="175">
       <div>
-        <h2></h2>
-        <p></p>
+        <h2 class="title"></h2>
+        <p class="description"></p>
       </div>
     </article>
   </a>
+</template>
+
+<template id="article-card-template">
+  <a class="card">
+    <article>
+      <h2 class="title"></h2>
+      <div>
+        <img class="img-right" height="155">
+        <time class="date"></time>
+        <p class="description"></p>
+      </div>
+    </article>
+  </a>
+</template>
+
+<template id="book-card-template">
+  <article class="card">
+    <img class="img-right" height="160">
+    <div>
+      <h2 class="title"></h2>
+      <p class="author"></p>
+      <p class="review"></p>
+    </div>
+  </article>
 </template>

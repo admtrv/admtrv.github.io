@@ -1,0 +1,60 @@
+<!-- inside-objcurses/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Inside objcurses: Low-Level 3D Graphics Without a GPU</title>
+    <link rel="icon" href="/resources/images/icons/icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/resources/css/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/resources/js/scripts.js" defer></script>
+</head>
+
+<body data-section="Inside objcurses: Low-Level 3D Graphics Without a GPU">
+    <div class="outer-container">
+
+        <header id="header-container"></header>
+
+        <section id="content">
+
+            <h2>Introduction</h2>
+
+            <p>
+                <img class="img-left" src="opengl.png" alt="OpenGL Course Demo" width="330">
+
+                When I first started writing this project, I had no intention of creating something commercially appealing. I was interested in something completely different: I wanted to understand how graphics work from the inside. How it all began and where it came from. In my second year, I chose the course <em>Principles of Computer Graphics and Image Processing</em>, where we theoretically studied the main principles and approaches in rendering during lectures, but in practice, we worked with OpenGL. After completing the course, I wanted to go deeper and understand how everything works at a lower level.
+            </p>
+
+            <p>
+                <img class="img-right" src="/books/sobota/sobota.webp" alt="Computer Graphics Book Cover" width="240">
+
+                The next step was the book <em>Computer Graphics and the C Language</em> by Branislav Sobota. I first came across it in the library at our Nokia office and immediately knew I wanted to study it. I ordered my own copy, both to add it to my professional library and to read it at my own pace. The book is quite old, published back in 1996, and in many ways outdated, since the author uses the Borland C++ graphics library aimed at DOS graphics, without GPU or shader support. But even so, it turned out to be interesting and useful material. After that amount of theory, I wanted to move on to practice, and that's how the idea of doing everything from scratch came about.
+            </p>
+
+            <p align="center">
+                <img src="demo.gif" alt="objcurses Demo" width="500">
+            </p>
+
+            <p>
+                I have always been attracted to the idea of programs that work with minimal resources. Minimalism not in the sense of primitiveness, but as a discipline: what can you build with just the basic tools and some math - like the early pioneers did. That's how <code>objcurses</code> came about - an ASCII renderer for 3D models that uses a terminal instead of a screen as the output target. At the start of the project, it seemed almost impossible.
+            </p>
+
+            <p>
+                <img class="img-left" src="neofetch.png" alt="neofetch Examples" width="370">
+
+                I chose to render using ASCII characters in the terminal because I'm a big fan of this retro approach. In the past, CLI programs often used text-based art, because the screen was limited to symbols, but people still wanted to create visually attractive graphical interfaces. And even now, this approach has many followers. Take <code>neofetch</code>, for example - a simple utility for displaying system information, but the main focus is often not on the information itself, but on the ASCII art. This is a place where users can express themselves. I remember my friend spending an entire day tweaking the config just to get a Vault Boy art from <em>Fallout</em> to show up correctly. This is not just a technical detail, it's a form of personalization. And I really like that something like this can be part of even a simple terminal application.
+            </p>
+
+
+            <p>
+                So, in this article, I want to talk about how the graphics pipeline of my project works from the inside: how vertices and faces are stored, how polygons are processed, how projection is built, and how all of this is turned into a final image.
+            </p>
+
+        </section>
+
+    </div>
+</body>
+
+</html>
