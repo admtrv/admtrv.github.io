@@ -5,140 +5,1248 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Inside objcurses: Low-Level 3D Graphics Without a GPU</title>
+    <title>Inside objcurses: Building a Minimalist 3D Renderer from Scratch</title>
     <link rel="icon" href="/resources/images/icons/icon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/resources/css/styles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/resources/js/scripts.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
 </head>
 
-<body data-section="Inside objcurses: Low-Level 3D Graphics Without a GPU">
+<body data-section="Inside objcurses: Building a Minimalist 3D Renderer from Scratch">
     <div class="outer-container">
 
         <header id="header-container"></header>
 
         <section id="content">
 
-
-            <section>
-
+            <div class="numbered">
                 <h2>Introduction</h2>
+                <p>In this article, I want to show you how you can build a simple graphics pipeline from scratch. We'll follow a practical approach inspired by classic computer graphics principles. Our goal is to render 3D models using nothing more than basic mathematics and minimal resources. </p>
+                <p>To illustrate each step, I’ll share insights and practical snippets from a personal project. This will help you see how theory translates directly into practice, providing you with examples that you can adapt and expand.</p>
+                <p>This technical teaching paper covers the essential principles of 3D rendering and serves as a solid foundation, whether you're a beginner learning the basics of computer graphics or a developer interested in low-level rendering concepts. By following this tutorial, you'll have everything you need to build your own simple renderer.</p>
 
-                <p>
-                    When I first started writing this project, I had no intention of creating something commercially appealing. I was interested in something completely different: I wanted to understand how graphics work from the inside. How it all began and where it came from. In my second year, I chose the course <em>Principles of Computer Graphics and Image Processing</em>, where we theoretically studied the main principles and approaches in rendering during lectures, but in practice, we worked with OpenGL. After completing the course, I wanted to go deeper and understand how everything works at a lower level.
-                </p>
-
+                <h2>Motivation</h2>
+                <p>When I first started writing this project, I had no intention of creating something commercially appealing. I was interested in something completely different: I wanted to understand how graphics work from the inside. How it all began and where it came from. In my second year, I chose the course <em>Principles of Computer Graphics and Image Processing</em>, where we theoretically studied the main principles and approaches in rendering during lectures, but in practice, we worked with OpenGL. After completing the course, I wanted to go deeper and understand how everything works at a lower level.</p>
                 <figure>
                     <img src="opengl.png" alt="Screenshot of an OpenGL-rendered gameroom with billiards and arcade machines" width="300">
                     <figcaption>OpenGL Course Project Screenshot</figcaption>
                 </figure>
-
-                <p>
-                    The next step was the book <em>Computer Graphics and the C Language</em> by Branislav Sobota. I first came across it in the library at our Nokia office and immediately knew I wanted to study it. I ordered my own copy, both to add it to my professional library and to read it at my own pace. The book is quite old, published back in 1996, and in many ways outdated, since the author uses the Borland C++ graphics library aimed at DOS graphics, without GPU or shader support. But even so, it turned out to be interesting and useful material. After that amount of theory, I wanted to move on to practice, and that's how the idea of doing everything from scratch came about.
-                </p>
-
+                <p>The next step was the book <em>Computer Graphics and the C Language</em> by Branislav Sobota. I first came across it in the library at our Nokia office and immediately knew I wanted to study it. I ordered my own copy, both to add it to my professional library and to read it at my own pace. The book is quite old, published back in 1996, and in many ways outdated, since the author uses the Borland C++ graphics library aimed at DOS graphics, without GPU or shader support. But even so, it turned out to be interesting and useful material. After that amount of theory, I wanted to move on to practice, and that's how the idea of doing everything from scratch came about.</p>
                 <figure>
                     <img src="/books/sobota/sobota.jpg" alt="Computer Graphics and the C Language book cover" width="240">
                     <figcaption>"Computer Graphics and the C Language" by Branislav Sobota</figcaption>
                 </figure>
-
-                <p>
-                    I have always been attracted to the idea of programs that work with minimal resources. Minimalism not in the sense of primitiveness, but as a discipline: what can you build with just the basic tools and some math - like the early pioneers did. That's how <code>objcurses</code> came about - an ASCII renderer for 3D models that uses a terminal instead of a screen as the output target. At the start of the project, it seemed almost impossible.
-                </p>
-
+                <p>I have always been attracted to the idea of programs that work with minimal resources. Minimalism not in the sense of primitiveness, but as a discipline: what can you build with just the basic tools and some math - like the early pioneers did. That's how <code>objcurses</code> came about - an ASCII renderer for 3D models that uses a terminal instead of a screen as the output target. At the start of the project, it seemed almost impossible.</p>
                 <figure>
                     <img src="demo.gif" alt="Rotation of a 3D fox model in the objcurses renderer" width="400">
                     <figcaption>objcurses Demo</figcaption>
                 </figure>
-
-                <p>
-                    I chose to render using ASCII characters in the terminal because I'm a big fan of this retro approach. In the past, CLI programs often used text-based art, because the screen was limited to symbols, but people still wanted to create visually attractive graphical interfaces. And even now, this approach has many followers. Take <code>neofetch</code>, for example - a simple utility for displaying system information, but the main focus is often not on the information itself, but on the ASCII art. This is a place where users can express themselves. I remember my friend spending an entire day tweaking the config just to get a Vault Boy art from <em>Fallout</em> to show up correctly. This is not just a technical detail, it's a form of personalization. And I really like that something like this can be part of even a simple terminal application.
-                </p>
-
+                <p>Choosing ASCII characters for rendering wasn't just practical - it also appealed to my love of this retro approach. In the past, CLI programs often used text-based art, because the screen was limited to symbols, but people still wanted to create visually attractive graphical interfaces. And even now, this approach has many followers. Take <code>neofetch</code>, for example - a simple utility for displaying system information, but the main focus is often not on the information itself, but on the ASCII art. This is a place where users can express themselves. I remember my friend spending an entire day tweaking the config just to get a Vault Boy art from <em>Fallout</em> to show up correctly. This is not just a technical detail, it's a form of personalization. And I really like that something like this can be part of even a simple terminal application.</p>
                 <figure>
                     <img src="neofetch.png" alt="Screenshot showing examples of text-based interfaces using neofetch" width="375">
                     <figcaption>neofetch Examples</figcaption>
                 </figure>
-
-                <p>
-                    So, in this article, I want to talk about how the graphics pipeline of my project works from the inside: how vertices and faces are stored, how polygons are processed, how projection is built, and how all of this is turned into a final image.
-                </p>
-
-            </section>
-
-            <section>
+                <p>With that motivation in mind, let's now explore step-by-step how you can build each stage of your own renderer - CLI-based or otherwise.</p>
 
                 <h2>3D Rendering Pipeline</h2>
-
-                <p>
-                    Every modern renderer - from OpenGL to Vulkan - is built around the same logical conveyor. 3D data passes through a series of well-defined processing stages, each stage solving a single class of problems and handing an ever-simpler representation forward.
-                </p>
-
+                <p>Every modern renderer - from OpenGL to Vulkan - is built around the same logical conveyor. 3D data passes through a series of well-defined processing stages, each stage solving a single class of problems and handing an ever-simpler representation forward.</p>
                 <figure>
                     <img src="pipeline.png" alt="Diagram of classic graphics pipeline stages arranged vertically" width="175">
                     <figcaption>Classic Pipeline</figcaption>
                 </figure>
+                <p>The main purpose of this is to divide the logic into distinct stages. Each stage has a clearly defined input and output, so it can be isolated, tested, optimized, and even hardwired into GPUs. Without this structure, logic would be mixed up, making debugging, performance tuning, and hardware implementation nearly impossible. But now, geometry is step-by-step reduced to screen pixels, and that each transformation is independent and composable. That's why this model became the standard: </p>
+                <ol>
+                    <li><strong>3D Primitives</strong> - The pipeline begins with raw vertex data and polygon definitions. </li>
+                    <li><strong>Modeling Transformation</strong> - This stage positions objects in world space using transformation matrices.</li>
+                    <li><strong>Lighting</strong> - Lighting calculations determine surface brightness based on material properties and light sources. </li>
+                    <li><strong>Viewing Transformation</strong> - The camera transformation orients all geometry relative to the viewer. </li>
+                    <li><strong>Projection Transformation</strong> - Perspective projection converts 3D coordinates to 2D screen space. </li>
+                    <li><strong>Clipping</strong> - Geometry that should not be rendered for some reason should be discarded to avoid rendering overhead.</li>
+                    <li><strong>Viewport Transformation</strong> - This stage maps normalized device coordinates to actual screen pixels.</li>
+                    <li><strong>Scan Conversion</strong> - Rasterization process converts geometric primitives into pixel fragments. </li>
+                    <li><strong>Image</strong> - The final stage outputs the rendered frame. </li>
+                </ol>
 
-                <p>
-                    The main purpose of this is to divide the logic into distinct stages. Each stage has a clearly defined input and output, so it can be isolated, tested, optimized, and even hardwired into GPUs. Without this structure, logic would be mixed up, making debugging, performance tuning, and hardware implementation nearly impossible. But now, geometry is step-by-step reduced to screen pixels, and that each transformation is independent and composable. That's why this model became the standard.
-                </p>
-
-                <p>
-                    Below I map the classic pipeline stages to their implementation in my project:
-                </p>
-
+                <h2>Object Parsing</h2>
+                <figure>
+                    <img src="stage-one.png" alt="Diagram of classic graphics pipeline with highlighted stage 1" width="175">
+                    <figcaption>First Stage</figcaption>
+                </figure>
+                <p>We will start with the <strong>3D Primitives</strong> stage, which is actually just some definition of geometric data that will be further processed to display on the screen. A starter cube in Blender or an assembled scene in a game engine was once just some form of geometry description. </p>
+                <figure>
+                    <img src="object-representation.png" alt="Five common 3D object representations" width="300">
+                    <figcaption>Different Object Representations</figcaption>
+                </figure>
+                <p>There are several common ways to represent 3D objects, each with its own use cases:</p>
                 <ul>
-                    <li>
-                        <strong>3D Primitives</strong><br>
-                        The pipeline begins with raw vertex data and polygon definitions. In the project, model files are loaded into memory with vertices stored as vectors and faces as index triplets, creating the basic mesh structure.
-                    </li>
+                    <li><strong>Geometric mesh</strong> - a set of vertices and triangles, the most common and flexible format.</li>
+                    <li><strong>Parametric</strong> - mathematically defined shapes like spheres or cylinders, often used in CAD and modeling software.</li>
+                    <li><strong>Voxel grid</strong> - a 3D array of values, suitable for representing volumes and densities, as used in <em>Minecraft</em> game</li>
+                    <li><strong>CSG (Constructive Solid Geometry)</strong> - boolean combinations of basic shapes.</li>
+                    <li><strong>Point cloud</strong> - a raw collection of 3D points, commonly obtained from LiDAR or MRI scanners.</li>
+                </ul>
+                <p>For this project, I chose the <strong>geometric mesh</strong> format because it is the most commonly used representation in general-purpose graphics pipelines. The other types are typically designed for more specialized domains. It also aligns with widely used formats like <code>.obj</code>, making it practical for implementation.</p>
 
-                    <li>
-                        <strong>Modeling Transformation</strong><br>
-                        This stage positions objects in world space using transformation matrices. I don't have matrix stack, so instead of dynamic transformations, the project pre-processes models by normalizing them into a unit cube.
-                    </li>
+                <h3>Format in Practice</h3>
+                <figure>
+                    <img src="obj.jpg" alt="Wavefront OBJ file content and its output as 3D model" width="400">
+                    <figcaption>Wavefront OBJ</figcaption>
+                </figure>
+                <p>The pipeline starts with raw 3D model data stored in the <em>Wavefront OBJ</em> format or <code>.obj</code> - a geometry definition file - in fact, plain text. Each record starts with a short keyword, followed by space-separated numbers or identifiers, nothing more. The format's minimalism and human-based syntax makes it perfect for understanding not only by the computer but also by a human.</p>
+                <p>My decision was to implement my own parser because I still have in my mind that the project is labeled as <strong>from scratch</strong>. Also I didn't need all the functionality of a complete comprehensive parser libraries. Since terminal output has obvious limitations, I built a lightweight version that focuses on what's actually needed. Only the following keywords are explicitly supported:</p>
+                <ul>
+                    <li><code>v</code> - defines a single vertex with 3D coordinates.</li>
+                    <li><code>f</code> - defines a face as a list of vertex indices.</li>
+                    <li><code>mtllib</code> - points to an external material library.</li>
+                    <li><code>usemtl</code> - assigns a material to subsequent faces by name.</li>
+                </ul>
+                <p>However, in practice, real files can be messier than the spec suggests: statements can appear in any order, indices can be negative, and faces might be triangles, quads, or even more complex polygons. My parser handles these variations as long as they are structurally valid. It makes it mostly compatible with models exported from most 3D software without requiring any preprocessing or conversion steps.</p>
 
-                    <li>
-                        <strong>Lighting</strong><br>
-                        Lighting calculations determine surface brightness based on material properties and light sources. The implementation uses a single directional light, with shading represented through ASCII character gradient based on face normal.
-                    </li>
+                <h3>Understanding of Geometry</h3>
+                <p>Before examining the specific parsing functions, it's essential to understand what we're actually dealing with when we talk about vertices and faces. The building blocks of any 3D object are surprisingly simple, but their combination creates all the complex shapes we see in games, movies, and simulations:</p>
+                <ul>
+                    <li><strong>Vertices</strong> - are points in 3D space defined by X, Y, Z coordinates.</li>
+                    <li><strong>Edges</strong> - lines connecting two vertices.</li>
+                    <li><strong>Faces</strong> - flat surfaces bounded by vertices.</li>
+                </ul>
+                <p>This hierarchy is fundamental to how 3D graphics work. When you see a complex 3D model - whether it's a character in a video game or a architectural visualization - remember that it's built from exactly these same simple components: vertices, that define positions, edges, that define connections, faces, that define surfaces, and their combinations, that creates solid-looking objects. The magic happens when thousands or millions of these basic elements combine to create the illusion of complex, smooth, realistic objects.</p>
+                <figure>
+                    <img src="vertices-edges.jpg" alt="3D shape shown as vertices, edges, and triangles" width="400">
+                    <figcaption>Mesh Construction</figcaption>
+                </figure>
 
-                    <li>
-                        <strong>Viewing Transformation</strong><br>
-                        The camera transformation orients all geometry relative to the viewer. Euler angles control camera rotation, applied directly to vertices through simple trigonometric functions, with no translation needed, since the model is always centered.
-                    </li>
+                <h3>Line-by-Line</h3>
+                <p>The core parsing loop processes each line sequentially</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
 
-                    <li>
-                        <strong>Projection Transformation</strong><br>
-                        Perspective projection converts 3D coordinates to 2D screen space. The project implements a basic perspective divide with adjustable zoom factor, mapping 3D points to logical screen coordinates.
-                    </li>
+bool Object::load(const std::string &amp;obj_filename, bool color_support)
+{
+    ...
 
-                    <li>
-                        <strong>Clipping</strong><br>
-                        Geometry outside the view frustum should be discarded to avoid rendering overhead. While full frustum clipping is omitted, because pixels outside the buffer boundaries are ignored anyway, back-face culling is fully realized to speed up rendering.
-                    </li>
+    while (std::getline(in, line))
+    {
+        strip_line(line);
 
-                    <li>
-                        <strong>Viewport Transformation</strong><br>
-                        This stage maps normalized device coordinates to actual screen pixels. Logical coordinates are quantized to terminal character cells through a straightforward scaling and indexing process.
-                    </li>
+        if (line.empty() || line[0] == '#') // comment
+            continue;
 
-                    <li>
-                        <strong>Scan Conversion</strong><br>
-                        Rasterization converts geometric primitives into pixel fragments. Triangles are processed column-by-column with depth testing, storing visible ASCII character and its attributes for each screen position.
-                    </li>
+        std::stringstream ss(line);
+        std::string cmd;
+        ss &gt;&gt; cmd;
 
-                    <li>
-                        <strong>Image</strong><br>
-                        The final stage outputs the rendered frame. The buffer efficiently prints characters row-by-row, handling color changes, before refreshing the terminal display.
-                    </li>
+        std::string arguments = line.substr(cmd.size());
+
+        if (!arguments.empty() &amp;&amp; arguments[0]  ' ')
+            arguments.erase(0, 1);
+
+        if (cmd == "v") 
+            parse_vertex(arguments);
+        else if (cmd == "f") 
+            parse_face(arguments, current_material);
+        else if (color_support &amp;&amp; cmd == "mtllib")
+            parse_mtl_file(arguments, obj_filename);
+        else if (color_support &amp;&amp; cmd == "usemtl")
+            current_material = parse_material(arguments);
+    }
+
+    ...
+}</code></pre>
+                <p>Each line gets split into command and arguments. The parser, as mentioned before, deliberately ignores unknown commands, focusing only on geometry and material assignment.</p>
+
+                <h4>Vertex Parsing</h4>
+                <p>Vertex parsing converts three floating-point coordinates into a <code>Vec3</code> structure. A <code>Vec3</code> (or basically a vector of 3 elements) is a classic data structure used in computer graphics to represent points or directions in three-dimensional space. It is convenient, because with the use of one structure it is possible to represent a point in space and the direction of a vector, for example, the vector of physical force, the vector of wind direction or the vector where the camera looks.</p>
+                <pre><code class="cpp language-cpp">// utils/mathematics.h
+
+class Vec3 {
+public:
+    float x = 0.0f;
+    float y = 0.0f;
+    float z = 0.0f;
+
+    Vec3() = default;
+    Vec3(float x, float y, float z);
+
+    // arithmetic operations
+    Vec3 operator+(const Vec3 &amp;other) const;
+    Vec3 operator-(const Vec3 &amp;other) const;
+
+    ...</code></pre>
+                <p>Another interesting thing is that for 2D graphics, for example platformers like <em>Super Mario Bros.</em>, you can also use this structure by simply stopping using the last <code>z</code> coordinate.</p>
+                <p>The parsing uses stream operators for automatic type conversion and error handling. If any coordinate fails to parse as a float, the entire vertex is rejected with a warning, preventing corrupted geometry from entering the pipeline.</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
+
+bool Object::parse_vertex(const std::string &amp;line)
+{
+    std::stringstream ss(line);
+    float x, y, z;
+    if (!(ss &gt;&gt; x &gt;&gt; y &gt;&gt; z))
+    {
+        std::cerr &lt;&lt; "warning: invalid vertex format" &lt;&lt; std::endl;
+        return false;
+    }
+    vertices.emplace_back(x, y, z);
+    return true;
+}</code></pre>
+
+                <h4>Face Parsing</h4>
+                <p>Face parsing is the most complex part because it must handle various polygon types and convert them into triangles that the graphics pipeline can process. Let's examine each step of this process.</p>
+
+                <h5>Step 1: Token Extraction</h5>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
+
+bool Object::parse_face(const std::string &amp;line, std::optional&lt;int&gt; current_material)
+{
+    std::stringstream ss(line);
+    std::vector&lt;unsigned int&gt; local_indices;
+    std::string token;
+
+    ...</code></pre>
+                <p>The function begins by creating a string stream to parse the face line word by word. The <code>local_indices</code> vector will store the vertex indices that define this face. </p>
+
+                <h5>Step 2: Actually More Complex Format</h5>
+                <pre><code class="cpp language-cpp">...
+
+while (ss &gt;&gt; token)
+{
+    if (const auto slash_pos = token.find('/'); slash_pos != std::string::npos)
+        token.erase(slash_pos); // keep only vertex index
+
+    auto maybe_idx = safe_stoi(token);
+
+    if (!maybe_idx) 
+        return false;
+
+    ...</code></pre>
+                <p>OBJ files use a complex format for face definitions. Each vertex reference can include up to three indices separated by slashes:</p>
+                <ul>
+                    <li><code>vertex_index/texture_index/normal_index</code></li>
+                    <li><code>vertex_index//normal_index</code> (missing texture)</li>
+                    <li><code>vertex_index/texture_index</code> (missing normal)</li>
+                    <li><code>vertex_index</code> (only vertex)</li>
+                </ul>
+                <p>Examples:</p>
+                <ul>
+                    <li><code>f 1/1/1 2/2/2 3/3/3</code> - complete indices</li>
+                    <li><code>f 1//1 2//2 3//3</code> - vertex and normal only</li>
+                    <li><code>f 1 2 3</code> - vertex indices only</li>
+                </ul>
+                <p>The code finds the first slash and removes everything after it, keeping only the vertex index. The <code>safe_stoi</code> function was implemented to safely converts the string into an integer, returning <code>std::nullopt</code> if conversion fails.</p>
+
+                <h5>Step 3: Indices Conversion</h5>
+                <pre><code class="cpp language-cpp">...
+
+int ridx = relative_index(*maybe_idx, static_cast&lt;int&gt;(vertices.size()));
+
+if (ridx &lt; 0) 
+    return false;
+
+local_indices.push_back(static_cast&lt;unsigned int&gt;(ridx));
+
+...</code></pre>
+                <p>OBJ files use a peculiar indexing system that differs from standard programming arrays and needs to be converted. The <code>relative_index</code> function handles this conversion.</p>
+                <pre><code class="cpp language-cpp">static int relative_index(const int idx, int total_vertices)
+{
+    if (idx == 0 || idx &lt; -total_vertices || idx &gt; total_vertices)
+        return -1;
+
+    return idx &lt; 0 ? total_vertices + idx : idx - 1;
+}</code></pre>
+                <p>The conversion handles three cases:</p>
+                <ol>
+                    <li><strong>Positive indices:</strong> Use 1-based counting (1, 2, 3) and convert to 0-based (0, 1, 2).</li>
+                    <li><strong>Negative indices:</strong> Count backwards from current vertex count (-1 = last vertex, -2 = second-to-last).</li>
+                    <li><strong>Invalid indices:</strong> Zero or out-of-range values returns error.</li>
+                </ol>
+                <p>With 10 vertices loaded, index <code>3</code> becomes <code>2</code> (array position), index <code>-1</code> becomes <code>9</code> (last vertex), and index <code>-2</code> becomes <code>8</code> (second-to-last vertex). Invalid indices like <code>0</code> or <code>15</code> (beyond range) return <code>-1</code>.</p>
+
+                <h5>Step 4: Simple Cases</h5>
+                <pre><code class="cpp language-cpp">...
+
+if (local_indices.size() &lt; 3) 
+    return false;
+
+if (local_indices.size() == 3)
+{
+    faces.emplace_back(local_indices[0], local_indices[1], local_indices[2], current_material);
+    return true;
+}
+
+...</code></pre>
+                <p>A face must have at least 3 vertices to form a valid polygon. If exactly 3 vertices are found, we have a triangle - the simplest case. The triangle is directly added to the faces collection with its three vertex indices and optional material reference.</p>
+
+                <h5>Step 5: Complex Polygons</h5>
+                <p>For faces with more than three vertices, the parser automatically triangulates them. This algorithm requires special attention and will be discussed in a separate section. But now it is important to realize, that this is essential because the rasterizer only processes triangles, as the basic visual unit. However, many 3D modeling tools export faces not only as triangles. So usually this is the responsibility of the creator of the 3D model to convert model into a format containing only triangular faces.</p>
+
+                <h5>The Face Structure</h5>
+                <p>After successful parsing, the face is saved in the following structure - <code>Face</code> class, that represents a triangle through three vertex indices plus an optional material reference.</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.h
+
+class Face {
+public:
+    std::array&lt;unsigned int, 3&gt; indices; // vertex indices
+    std::optional&lt;int&gt; material;         // optional material index
+
+    ...
+};</code></pre>
+                <p>Using indices instead of storing vertex coordinates directly is crucial for memory efficiency. A typical 3D model shares vertices between adjacent faces, so this indexed representation reduces memory usage by approximately 70% compared to duplicating vertex data for each face.</p>
+
+                <h3>Object Data Holder</h3>
+                <p>After loading, the geometry must be stored in memory efficiently. Different applications require different data structures, each with specific trade-offs between memory usage, access speed, and functionality.</p>
+
+                <h4>Geometry Storage Formats</h4>
+                <p>There are several ways to store geometry in memory. Here's how they differ and why I chose one of them.</p>
+
+                <h5>Wire-Frame Model</h5>
+                <figure>
+                    <img src="wireframe.png" alt="Wire-frame model structure" width="400">
+                    <figcaption>Wire-Frame Model</figcaption>
+                </figure>
+                <p>Stores only vertices and edges. Lightweight, but lacks surface information. Common in CAD for structural analysis.</p>
+                <pre><code class="cpp language-cpp">struct WireFrame {
+    std::vector&lt;Vec3&gt; vertices;
+    std::vector&lt;std::pair&lt;int, int&gt;&gt; edges;
+};</code></pre>
+
+                <h5>Vertex and Face Lists</h5>
+                <figure>
+                    <img src="vertex-face.png" alt="Vertex and face lists structure" width="250">
+                    <figcaption>Vertex and Face Lists</figcaption>
+                </figure>
+                <p>Separates geometry into vertex and face tables. Faces reference shared vertices by index, which saves memory and enables efficient rendering.</p>
+                <pre><code class="cpp language-cpp">struct VertexFaceList {
+    std::vector&lt;Vec3&gt; vertices;
+    std::vector&lt;std::array&lt;int, 3&gt;&gt; faces;
+};</code></pre>
+
+                <h5>Face Lists</h5>
+                <figure>
+                    <img src="face.png" alt="Face lists structure" width="250">
+                    <figcaption>Face Lists</figcaption>
+                </figure>
+                <p>Stores full vertex coordinates per face. Simple to access, but duplicates shared vertices and consumes more memory.</p>
+                <pre><code class="cpp language-cpp">struct FaceList {
+    std::vector&lt;std::array&lt;Vec3, 3&gt;&gt; faces;
+};</code></pre>
+
+                <h5>Adjacency Lists</h5>
+                <figure>
+                    <img src="neighbors.png" alt="Adjacency lists structure" width="250">
+                    <figcaption>Adjacency Lists</figcaption>
+                </figure>
+                <p>Adds connectivity data to each vertex or face. Useful for topology analysis and mesh editing, but increases memory usage.</p>
+                <pre><code class="cpp language-cpp">struct AdjacencyList {
+    std::vector&lt;Vec3&gt; vertices;
+    std::vector&lt;std::vector&lt;int&gt;&gt; vertex_neighbors; // adjacent vertices
+    std::vector&lt;std::vector&lt;int&gt;&gt; face_neighbors;   // adjacent faces
+};</code></pre>
+
+                <h5>Winged-Edge Structure</h5>
+                <figure>
+                    <img src="winged.png" alt="Winged-edge structure" width="400">
+                    <figcaption>Winged-Edge Structure</figcaption>
+                </figure>
+                <p>The most sophisticated representation is the winged-edge structure, which stores complete connectivity information for efficient mesh traversal in any direction. </p>
+                <pre><code class="cpp language-cpp">struct Edge {
+    int vertex1, vertex2;      // edge endpoints
+    int face_left, face_right; // adjacent faces
+    int next_left, prev_left;  // edge chains around faces
+    int next_right, prev_right;
+};
+
+struct WingedEdge {
+    std::vector&lt;Vec3&gt; vertices;
+    std::vector&lt;Edge&gt; edges;
+    std::vector&lt;int&gt; face_edges; // one edge per face
+};</code></pre>
+
+                <h4>Implementation Choice</h4>
+                <p>The choice is up to you and depends on the specific task you are solving, on the resources you have available, on the expected speed of work and so on. I chose the <strong>Vertex and Triangle Face</strong> list approach with material support, implemented through three tightly-packed vectors that remain in memory after loading.</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.h
+
+class Object {
+public:
+    std::vector&lt;Vec3&gt; vertices;      // positions
+    std::vector&lt;Face&gt; faces;         // indices + optional material id
+    std::vector&lt;Material&gt; materials; // materials
+
+    ...
+};</code></pre>
+
+                <h3>Adding Color Support</h3>
+                <p>Basic geometry parsing produces monochrome output, but user can also provide 3D model that include color information. The OBJ format references external material libraries through the <code>mtllib</code> directive, followed by <code>usemtl</code> commands that assign materials to subsequent faces.</p>
+
+                <h4>Color Library Format</h4>
+                <p>The <em>Wavefront Material Template Library</em> or <code>.mtl</code> file is a plain-text companion to OBJ, containing color definitions for named materials. In this project, only two keywords are recognized: </p>
+                <ul>
+                    <li><code>newmtl</code> - declares the beginning of a new material entry.</li>
+                    <li><code>Kd</code> - defines diffuse color using three floating-point RGB values.</li>
+                </ul>
+                <p>When <code>color_support</code> is enabled, the parser resolves the referenced file via <code>mtllib</code>, opens it, and processes it line by line. No other fields from the MTL specification are parsed: specular highlights <code>Ks</code>, ambient terms <code>Ka</code>, transparency, or texture paths are skipped entirely, because the terminal cannot display them anyway. </p>
+
+                <figure>
+                    <img src="material.jpg" alt="Text part of the mtl file defining one material" width="250">
+                    <figcaption>Example of One Material</figcaption>
+                </figure>
+
+                <p>So basically, when referring to material in the context of this program, we are actually referring only to the diffuse component of color. The <code>Material</code> class can stores this minimal information:</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.h
+
+class Material {
+public:
+    std::string material_name;      // identifier
+    Vec3 diffuse;                   // RGB color components
+
+    ...
+};</code></pre>
+
+                <h4>Material Parsing</h4>
+                <p>The MTL parser implements a simple state machine that accumulates material properties before committing them to the materials vector.</p>
+                <p>The function opens the MTL file and initializes the state machine variables. <code>current_name</code> and <code>current_diffuse</code> track the material being processed, while <code>have_active_material</code> indicates whether a material is ready for commitment.</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
+
+bool Object::load_materials(const std::string &amp;mtl_filename)
+{
+    auto file = open_file(mtl_filename);
+    if (!file.has_value()) 
+        return false;
+
+    std::ifstream in = std::move(*file);
+    std::string current_name;
+    Vec3 current_diffuse(1.0f, 1.0f, 1.0f);
+    bool have_active_material = false;
+    std::string line;
+
+    ...</code></pre>
+                <p>When encountering <code>newmtl</code>, the parser first commits any previously accumulated material, then resets the state for the new material.</p>
+                <pre><code class="cpp language-cpp">...
+
+if (cmd == "newmtl")
+{
+    if (have_active_material)
+        materials.emplace_back(current_name, current_diffuse);
+
+    ss &gt;&gt; current_name;
+    current_diffuse = Vec3(1.0f, 1.0f, 1.0f);
+    have_active_material = true;
+}
+
+...</code></pre>
+                <p>The <code>Kd</code> command extracts three floating-point RGB values and updates the current material's diffuse color.</p>
+                <pre><code class="cpp language-cpp">    ...
+
+    else if (cmd == "Kd")
+    {
+        float r, g, b;
+        if (ss &gt;&gt; r &gt;&gt; g &gt;&gt; b)
+            current_diffuse = Vec3(r, g, b);
+    }
+}</code></pre>
+
+                <h4>Material Assignment</h4>
+                <p>When <code>color_support</code> is enabled during loading, the parser tracks material assignments through <code>usemtl</code> commands.</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
+
+std::optional&lt;int&gt; Object::parse_material(const std::string &amp;line) const
+{
+    std::stringstream ss(line);
+    std::string material_name;
+    ss &gt;&gt; material_name;
+    return find_material(material_name);
+}</code></pre>
+                <p>The <code>find_material</code> method searches the loaded materials vector for a matching name.</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
+
+std::optional&lt;int&gt; Object::find_material(const std::string &amp;material_name) const
+{
+    const auto it = std::ranges::find_if(materials, 
+        [&amp;material_name](const Material &amp;m) { 
+            return m.material_name == material_name; 
+        });
+
+    return (it != materials.end()) ? 
+        std::make_optional(std::distance(materials.begin(), it)) : std::nullopt;
+}</code></pre>
+                <p>The resolved material index is attached to faces and used to tint their final ASCII output. Unknown material references are silently replaced by a default white color and logged once for debugging.</p>
+
+                <h3>Finalization</h3>
+                <p>After parsing completes, the <code>validate()</code> method performs comprehensive error checking.</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
+
+bool Object::validate() const
+{
+    if (vertices.empty() || faces.empty())
+    {
+        std::cerr &lt;&lt; "error: invalid object" &lt;&lt; std::endl;
+        return false;
+    }
+
+    ...
+
+    return true;
+}</code></pre>
+                <p>The validation ensures that every face index references a valid vertex, preventing crashes during rendering. It also verifies that the object contains at least one vertex and one face, rejecting empty or corrupted files.</p>
+                <p>This completes the first stage of the graphics pipeline. Raw text files have been transformed into structured in-memory representations suitable for geometric processing.</p>
+                <p>You are probably wondering why so much time was devoted to the parser, but during the debugging process, many problems were found related to the parsing stage rather than the actual mathematics of image rendering.</p>
+
+                <h2>Triangulation Process</h2>
+
+                <h3>The Problem of Complex Polygons</h3>
+                <p>As mentioned in the face parsing section, real OBJ files often contain faces with more than three vertices. However, the graphics pipeline is designed around triangles as the fundamental rendering primitive. This creates a fundamental mismatch: we have arbitrary polygons but need triangles.</p>
+                <figure>
+                    <img src="triangulation.png" alt="Polygon before and after triangulation" width="250">
+                    <figcaption>Polygon Triangulation into Multiple Triangles</figcaption>
+                </figure>
+                <p>The solution is <em>triangulation</em> - the process of decomposing a complex polygon into a set of triangles that cover exactly the same area. </p>
+
+                <h3>Why Triangles</h3>
+                <figure>
+                    <img src="triangles.png" alt="Two low-poly 3D character models with visible triangles" width="250">
+                    <figcaption>Examples of Triangulated Character Meshes</figcaption>
+                </figure>
+                <p>The choice of triangles as the basic rendering primitive stems from a fundamental geometric property: any three points in 3D space always define exactly one flat plane, regardless of their positions. This mathematical certainty means that triangles are inherently stable and predictable - they cannot be twisted, warped, or ambiguous in their shape. When you have three vertices, there's only one possible surface that connects them, and that surface is guaranteed to be perfectly flat.</p>
+                <figure>
+                    <img src="four-vertices.png" alt="Non-planar shape from four vertices" width="250">
+                    <figcaption>Non-Planar Polygon Formed by Four Vertices</figcaption>
+                </figure>
+                <p>The situation becomes dramatically more complex with four or more vertices. Four points in space can describe anything from a flat square (if all points happen to be coplanar) to a three-dimensional pyramid (if one point lies out of the plane formed by the other three). This ambiguity creates a computational nightmare: the graphics system must constantly determine the actual shape being described, calculate how to render non-planar surfaces, and handle the increased complexity of transformations. For instance, rotating a quadrilateral isn't as simple as rotating each vertex independently - the system must also recalculate how the surface bends and twists, verify that the result is still a valid shape, and determine how to properly interpolate colors or textures across a potentially curved surface. With triangles, these problems simply don't exist: rotate the three vertices, and you automatically have a valid, flat triangle with no additional calculations required.</p>
+
+                <h3>Common Algorithms</h3>
+                <p>There are several classic algorithms used to triangulate complex polygons:</p>
+                <ul>
+                    <li><strong>Ear Clipping:</strong> Simple and robust. Iteratively removes convex "ears" from the polygon. Easy to implement, handles irregular shapes well, but runs in O(n²).</li>
+                    <li><strong>Monotone Decomposition:</strong> Splits the polygon into monotone pieces and triangulates each in linear time. Overall O(n log n), more efficient but harder to implement.</li>
+                    <li><strong>Fan Triangulation:</strong> The simplest approach that connects all vertices to a single "fan center" vertex. Extremely fast O(n), but can produce poor-quality triangles.</li>
+                </ul>
+                <p>These are just a few of many approaches, each with trade-offs in performance or output quality. For this project, I chose <strong>Ear Clipping</strong> for its simplicity and robustness in handling irregular polygons commonly found in real-world 3D models. Let's move on.</p>
+
+                <h3>Ear Clipping Algorithm</h3>
+                <p>The algorithm is based on a fundamental theorem from computational geometry: every simple polygon with more than three vertices has at least two <strong>"ears"</strong> - triangles formed by three consecutive vertices where the middle vertex can be "clipped off" without affecting the rest of the polygon.</p>
+                <figure>
+                    <img src="ear.png" alt="Example of step-by-step ear clipping triangulation of a polygon" width="450">
+                    <figcaption>Polygon Triangulation Using Ear Clipping Method</figcaption>
+                </figure>
+                <p>The process works by repeatedly finding and removing these ears until only a single triangle remains. Each ear becomes one triangle in the final decomposition.</p>
+
+                <h4>Step 1: Polygon Validation</h4>
+                <pre><code class="cpp language-cpp">// utils/algorithms.cpp
+
+std::optional&lt;std::vector&lt;size_t&gt;&gt; triangularize(const std::vector&lt;Vec3&gt; &amp;points)
+{
+    const size_t n = points.size();
+    if (n &lt; 3)
+    {
+        return std::nullopt; // insufficient points
+    }
+
+    const Vec3 normal = Vec3::normal(points);
+    if (normal.magnitude() &lt; 1e-12f)
+    {
+        return std::nullopt; // degenerate polygon
+    }
+
+    ...</code></pre>
+                <p>Before attempting triangulation, the algorithm validates the input polygon. A polygon needs at least three vertices to be meaningful, and all vertices must be coplanar (lie in the same plane). The normal vector calculation serves as a coplanarity test - if the computed normal has near-zero magnitude, the points are collinear or degenerate, making triangulation impossible.</p>
+
+                <h4>Step 2: Index Management</h4>
+                <pre><code class="cpp language-cpp">...
+
+// list of vertex indexes
+std::vector&lt;size_t&gt; indices(n);
+std::iota(indices.begin(), indices.end(), 0);
+std::vector&lt;size_t&gt; result;
+
+...</code></pre>
+                <p>Rather than manipulating the vertex coordinates directly, the algorithm works with indices. The <code>indices</code> vector starts as <code>[0, 1, 2, ..., n-1]</code> and represents the current "active" vertices of the polygon. As ears are clipped, vertices are removed from this list, but the original vertex array remains unchanged.</p>
+                <p>The <code>result</code> vector accumulates the triangles as triplets of indices. Each successful ear clip adds three indices to this vector, representing one triangle.</p>
+
+                <h4>Step 3: Ear Detection</h4>
+                <p>The heart of the algorithm lies in the <code>is_ear()</code> function, which determines whether a vertex can be safely clipped.</p>
+                <pre><code class="cpp language-cpp">// utils/algorithms.cpp
+
+static bool is_ear(const size_t i, const std::vector&lt;Vec3&gt; &amp;points, const std::vector&lt;size_t&gt; &amp;indices, const Vec3 &amp;normal)
+{
+    const size_t prev = indices[(i + indices.size() - 1) % indices.size()];
+    const size_t curr = indices[i];
+    const size_t next = indices[(i + 1) % indices.size()];
+
+    const Vec3 &amp;v1 = points[prev];
+    const Vec3 &amp;v2 = points[curr];
+    const Vec3 &amp;v3 = points[next];
+
+    ...</code></pre>
+                <p>For a vertex to be an ear, it must satisfy two conditions:</p>
+                <ol>
+                    <li>The angle at that vertex must be convex (less than 180 degrees)</li>
+                    <li>No other vertices of the polygon can lie inside the triangle formed by this vertex and its neighbors</li>
+                </ol>
+                <p>The function examines three consecutive vertices: the previous, current, and next vertex in the polygon boundary. These three points form a potential triangle that could be clipped.</p>
+
+                <h5>Convexity Test</h5>
+                <pre><code class="cpp language-cpp">...
+
+// check if angle is convex
+const Vec3 d1 = v2 - v1;
+const Vec3 d2 = v3 - v2;
+if (Vec3::dot(Vec3::cross(d1, d2), normal) &lt;= 0.0f)
+{
+    return false; // not convex
+}
+
+...</code></pre>
+                <p>The convexity test uses the cross product of two edge vectors to determine the turning direction at the vertex. When we traverse the polygon boundary counterclockwise, a convex vertex will have a positive dot product with the polygon normal, while a concave (reflex) vertex will have a negative dot product.</p>
+                <p>This works because the cross product <code>d1 x d2</code> produces a vector perpendicular to both edges. If this vector points in the same direction as the polygon normal (positive dot product), the turn is counterclockwise and the angle is convex. If it points opposite (negative dot product), the turn is clockwise and the angle is concave.</p>
+
+                <h5>Interior Point Test</h5>
+                <pre><code class="cpp language-cpp">...
+
+// check for no other points inside triangle
+for (size_t j = 0; j &lt; indices.size(); j++)
+{
+    if (j == (i - 1 + indices.size()) % indices.size() || j == i || j == (i + 1) % indices.size())
+    {
+        continue;
+    }
+
+    if (is_in_triangle(points[indices[j]], v1, v2, v3, normal))
+    {
+        return false; // point inside triangle
+    }
+}
+return true; // ear found
+
+...</code></pre>
+                <p>Even if a vertex forms a convex angle, it's only a valid ear if no other polygon vertices lie inside the triangle it would create. The algorithm tests each remaining vertex (excluding the three that form the triangle itself) to ensure none fall within the triangle's interior.</p>
+
+                <h4>Step 4: Ear Clipping Loop</h4>
+                <pre><code class="cpp language-cpp">...
+
+// ears search
+while (indices.size() &gt; 3)
+{
+    bool ear_found = false;
+    for (std::size_t i = 0; i &lt; indices.size(); i++)
+    {
+        if (is_ear(i, points, indices, normal))
+        {
+            // adding triangle
+            size_t prev = indices[(i + indices.size() - 1) % indices.size()];
+            size_t curr = indices[i];
+            size_t next = indices[(i + 1) % indices.size()];
+
+            result.push_back(prev);
+            result.push_back(curr);
+            result.push_back(next);
+
+            // removing current ear
+            indices.erase(std::next(indices.begin(), static_cast&lt;std::ptrdiff_t&gt;(i)));
+            ear_found = true;
+            break;
+        }
+    }
+
+    if (!ear_found)
+    {
+        return std::nullopt; // no valid ear
+    }
+}</code></pre>
+                <p>The main loop continues until only three vertices remain (which form the final triangle). In each iteration, it searches for the first valid ear, clips it by adding the triangle to the result and removing the middle vertex from the active indices.</p>
+                <p>The algorithm guarantees that every simple polygon has at least one ear, so if no ear is found, the polygon must be invalid (self-intersecting, degenerate, or have incorrect vertex ordering).</p>
+
+                <h3>Integration with Face Parsing</h3>
+                <p>Back in the face parsing code, the triangulation is applied whenever a face has more than three vertices:</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
+
+...
+
+// complex polygons (step 5 from face parsing)
+std::vector&lt;Vec3&gt; polygon;
+polygon.reserve(local_indices.size());
+
+for (const auto idx : local_indices)
+{
+    polygon.push_back(vertices[idx]);
+}
+
+const auto result = triangularize(polygon);
+if (!result.has_value())
+{
+    std::cerr &lt;&lt; "warning: triangularize failed" &lt;&lt; std::endl;
+    return false;
+}
+
+// adding faces
+const auto &amp;triangle_indices = result.value();
+for (size_t i = 0; i &lt; triangle_indices.size(); i += 3)
+{
+    unsigned int i1 = local_indices[ triangle_indices[i] ];
+    unsigned int i2 = local_indices[ triangle_indices[i+1] ];
+    unsigned int i3 = local_indices[ triangle_indices[i+2] ];
+    faces.emplace_back(i1, i2, i3, current_material);
+}
+
+...</code></pre>
+                <p>The process extracts the 3D coordinates for the face's vertices, attempts triangulation, and then converts the result back into face objects using the original vertex indices. Each triangle becomes a separate face with the same material assignment as the original polygon.</p>
+
+                <h2>Geometric Transformations</h2>
+                <figure>
+                    <img src="stage-two.png" alt="Diagram of classic graphics pipeline with highlighted stage 2" width="175">
+                    <figcaption>Second Stage</figcaption>
+                </figure>
+                <p>The second stage is traditionally known as <strong>Modeling Transformation</strong>. It's responsible for placing objects into world space via translation, rotation, and scaling matrices. However, in this project, that stage is not fully implemented, because there’s no need to shift or rotate models, they’re always centered. Operations themselves are done using direct math.</p>
+                <figure>
+                    <img src="matrix.png" alt="Lena with examples of translation, rotation, scaling transformations" width="500">
+                    <figcaption>Geometric Transformations Using Matrices</figcaption>
+                </figure>
+                <p>When a 3D model gets loaded into our renderer, it needs some preparation before it can be displayed. The most crucial step is the <code>normalize()</code> method, which ensures that models render consistently regardless of how they were originally positioned or sized in the modeling software.</p>
+                <p>This standardization is necessary because 3D models come from various sources with different scaling conventions. A model exported from Blender might be enormous compared to one from Maya, and they might be positioned at completely different locations in 3D space. Without normalization, some models would be invisible specks while others would be so large they'd overwhelm the entire scene.</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
+
+void Object::normalize()
+{
+    if (vertices.empty()) 
+        return;
+
+    Vec3 vmin = vertices[0];
+    Vec3 vmax = vertices[0];
+
+    for (const auto &amp;v : vertices)
+    {
+        vmin.x = std::min(vmin.x, v.x);
+        vmin.y = std::min(vmin.y, v.y);
+        vmin.z = std::min(vmin.z, v.z);
+
+        vmax.x = std::max(vmax.x, v.x);
+        vmax.y = std::max(vmax.y, v.y);
+        vmax.z = std::max(vmax.z, v.z);
+    }
+
+    const Vec3 center = (vmin + vmax) * 0.5f;
+    const float scale = 1.0f / std::max({
+        vmax.x - vmin.x,
+        vmax.y - vmin.y,
+        vmax.z - vmin.z,
+        1e-6f
+    });
+
+    for (auto &amp;v : vertices)
+    {
+        v = (v - center) * scale;
+    }
+}</code></pre>
+                <p>The algorithm works by first computing the axis-aligned bounding box - essentially finding the minimum and maximum coordinates along each axis. From these extremes, we calculate the center point and determine the scale factor needed to fit the model within a unit cube. The final transformation moves every vertex so that the model sits centered at the origin within a <code>[-0.5, 0.5]</code> cube. </p>
+                <p>However, normalization alone doesn't solve all compatibility issues. Different 3D modeling packages use different coordinate system conventions, particularly regarding handedness - whether the coordinate system is left-handed or right-handed. When models are exported between systems with different handedness, they can appear mirrored or have their surfaces facing the wrong direction.</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
+
+void Object::invert_x()
+{
+    for (auto &amp;v : vertices)
+    {
+        v.x = -v.x;
+    }
+
+    flip_faces();
+}
+
+void Object::invert_y()
+{
+    for (auto &amp;v : vertices)
+    {
+        v.y = -v.y;
+
+        ...</code></pre>
+                <p>The coordinate inversion methods handle these handedness mismatches by negating the appropriate coordinate axis. But simply flipping coordinates creates a new problem: it reverses the <em>winding order</em> of triangles, which determines which side of each triangle is considered front-facing. </p>
+                <figure>
+                    <img src="invert.png" alt="Flipping a 3d model reverses triangle winding and face orientation" width="400">
+                    <figcaption>Winding Order Reversal After Coordinate Flip</figcaption>
+                </figure>
+                <p>As we already know, triangles in 3D are defined by three vertex indices. The order of these indices determines which side of the triangle is considered the “front”. For example:</p>
+                <pre><code>v0 -&gt; v1 -&gt; v2 - counterclockwise loop = front
+v2 -&gt; v1 -&gt; v0 - clockwise loop = back</code></pre>
+                <p>In graphics this information usually used for back-face culling - an optimization that skips rendering triangles facing away from the camera. If the order is broken, the front faces may not be displayed.</p>
+                <pre><code class="cpp language-cpp">// entities/geometry/object.cpp
+
+void Object::flip_faces()
+{
+    for (auto &amp;f : faces)
+    {
+        std::swap(f.indices[1], f.indices[2]);
+    }
+}</code></pre>
+                <p>The <code>flip_faces()</code> function corrects this by swapping the second and third vertex indices in each triangle, effectively reversing the triangle's winding order. This ensures that after coordinate inversion, the triangles maintain their correct front-facing orientation, preserving the model's visual appearance and rendering behavior. Without this step, some triangles might render inside-out or disappear entirely depending on the camera angle.</p>
+                <figure>
+                    <img src="flip.png" alt="3d cube model before and after fixing triangle winding with flipped faces" width="400">
+                    <figcaption>Correcting Winding Order</figcaption>
+                </figure>
+                <p>Combined, these preprocessing steps might seem like overhead, but they're essential for building a robust rendering system. By handling these compatibility issues upfront, the rest of the rendering pipeline can operate on standardized, predictable data, leading to more reliable and consistent results across different input sources. </p>
+
+                <h2>Lighting and Shading</h2>
+                <figure>
+                    <img src="stage-three.png" alt="Diagram of classic graphics pipeline with highlighted stage 3" width="175">
+                    <figcaption>Third Stage</figcaption>
+                </figure>
+                <p>After geometric transformations prepare our model in world space, the next step is determining how <strong>Light</strong> interacts with surfaces. This stage transforms flat, uniform geometry into visually rich objects with depth and dimension through shading calculations.</p>
+
+                <h3>The Phong Illumination Model</h3>
+                <figure>
+                    <img src="phong.png" alt="Ambient, diffuse, and specular components combining into Phong reflection on a 3d shape" width="400">
+                    <figcaption>Components of Phong Illumination Model</figcaption>
+                </figure>
+                <p>The renderer implements a simplified version of the Phong illumination model, one of the most fundamental lighting models in computer graphics. Named after Bui Tuong Phong who developed it in 1975, this model approximates how light reflects off surfaces by breaking illumination into three components:</p>
+                <ol>
+                    <li><strong>Ambient</strong> - uniform background lighting that reaches all surfaces equally.</li>
+                    <li><strong>Diffuse</strong> - light scattered equally in all directions from rough surfaces.</li>
+                    <li><strong>Specular</strong> - mirror-like reflections creating highlights on shiny surfaces.</li>
+                </ol>
+                <p>In our implementation, we focus solely on the diffuse component, which is sufficient for conveying shape and depth in ASCII rendering. The light is defined as a directional light source - imagine sunlight where all rays arrive parallel from an infinite distance. The direction is defined simply by using 3D vector:</p>
+                <pre><code class="cpp language-cpp">// entities/view/light.h
+
+class Light {
+public:
+    Vec3 direction;
+
+    ...
+
+};</code></pre>
+
+                <h3>Diffuse Reflection Mathematics</h3>
+                <p>Diffuse reflection follows Lambert's cosine law: the amount of light reflected is proportional to the cosine of the angle between the surface normal and the light direction. When light hits a surface head-on (angle = 0°), reflection is maximum. As the angle increases, less light reaches the surface until at 90° (grazing angle) no light is reflected.</p>
+                <pre><code class="cpp language-cpp">// entities/rendering/renderer.cpp
+
+char Renderer::luminance_char(const Vec3 &amp;normal, const Vec3 &amp;light, const std::string &amp;scale)
+{
+    const float sim = (Vec3::cosine_similarity(normal, light) + 1.0f) * 0.5f;
+    const int idx = std::clamp(
+        static_cast&lt;int&gt;(std::round(sim * static_cast&lt;float&gt;(scale.size() - 1))), 
+        0, 
+        static_cast&lt;int&gt;(scale.size() - 1)
+    );
+    return scale[idx];
+}</code></pre>
+                <p>The cosine similarity between the normal and light vectors gives us a value from -1 to 1. We transform this to 0-1 range (where 0 is fully shadowed and 1 is fully lit), then map it to our gradient. </p>
+                <pre><code class="cpp language-cpp">// config.h
+inline constexpr char CHARS_LUM[] = " .:-=+*#%@";</code></pre>
+                <p>This classic ASCII gradient is get from this <a href="https://paulbourke.net/dataformats/asciiart/">article</a> written by&nbsp;Paul Bourke in February 1997. It progresses from empty space for dark areas through various ASCII characters of increasing visual density for brighter regions. </p>
+                <figure>
+                    <img src="grayscale.png" alt="Grayscale value scale from 0 to 10 labeled dark to light" width="300">
+                    <figcaption>Grayscale Value Gradient for Lightness Perception</figcaption>
+                </figure>
+                <p>To obtain such a gradient, it is sufficient to evaluate each character according to its relative brightness, place it on a scale from darkest to lightest, and it is ready for use. But why use all 128 characters, since many of them will differ in brightness by fractions of a unit? Let's take the most notable ones and limit our selection to 10 characters. This is how we got the gradient that we use for drawing. Its analogue is the classic black-and-white gradient that people use for black-and-white photos.</p>
+
+                <h3>Shading Methods</h3>
+                <figure>
+                    <img src="shading.png" alt="Comparison of Flat, Gouraud, and Phong shading on red 3D spheres" width="350">
+                    <figcaption>Flat, Gouraud, and Phong Shading Comparison</figcaption>
+                </figure>
+                <p>Shading itself determine how lighting calculations apply across surfaces. These methods differ in how they calculate surface brightness:</p>
+                <ul>
+                    <li><strong>Flat Shading (Polygon Normal Only)</strong> assigns a single shading value per polygon based solely on its face normal. It’s computationally simple and efficient.</li>
+                    <li><strong>Gouraud Shading (Color Interpolation)</strong> calculates lighting at each vertex, then smoothly interpolates these vertex brightness values across the polygon surface, producing softer transition. </li>
+                    <li><strong>Phong Shading (Normal Interpolation)</strong> interpolates normals per pixel, calculating lighting at each point, achieving realistic smooth shading and highlights, but it’s the most computationally demanding.</li>
+                </ul>
+                <p><strong>Flat shading</strong> fits my task best due to its simplicity, speed, and clear visual distinction within limited terminal resolution. Advanced methods like Gouraud or Phong would add complexity without noticeable visual improvement. It also adds that retro vibe that old graphics used to have, back when computing couldn't yet allow lots of calculations.</p>
+
+                <h2>Viewing Transformation</h2>
+                <figure>
+                    <img src="stage-four.png" alt="Diagram of classic graphics pipeline with highlighted stage 4" width="175">
+                    <figcaption>Fourth Stage</figcaption>
+                </figure>
+                <p>The camera system controls how we observe the 3D scene, transforming world coordinates into view coordinates - this defines our next step, <strong>Viewing Transformation</strong>. Unlike a traditional free-moving camera with distinct local and global coordinate systems that is common in interactive scenes, this implementation uses a simplified orbital camera. </p>
+                <figure>
+                    <img src="word-local.png" alt="Transformation of a point from local to world coordinate system using matrix M" width="300">
+                    <figcaption>Local to World Coordinate Transformation</figcaption>
+                </figure>
+                <p>Here, the camera always points at the origin, rotating around the object at a fixed distance. Therefore, explicit conversions between local and global coordinate systems aren't needed</p>
+
+                <h3>Orbital Camera Design</h3>
+                <pre><code class="cpp language-cpp">// entities/view/camera.h
+
+class Camera {
+public:
+    float azimuth;      // rad
+    float altitude;     // rad  
+    float zoom;         // 1.0 == unit cube
+    ...
+}</code></pre>
+                <p>The camera orbits around the origin using spherical coordinates:</p>
+                <ul>
+                    <li><strong>Azimuth</strong> - horizontal rotation</li>
+                    <li><strong>Altitude</strong> - vertical rotation from the horizontal plane</li>
+                    <li><strong>Zoom</strong> - distance from the origin</li>
+                </ul>
+                <figure>
+                    <img src="orbita.png" alt="Spherical coordinates showing azimuth and altitude from observer at origin" width="250">
+                    <figcaption>Spherical Coordinates for Orbital Camera Movement</figcaption>
+                </figure>
+                <p>Taken directly from aeronautics, which is a complete analogue of the classic Euler angles of rotation, this design perfectly suits our normalized models centered at the origin. Users can examine objects from any angle without complex position calculations.</p>
+
+                <h2>Projection Transformation</h2>
+                <figure>
+                    <img src="stage-five.png" alt="Diagram of classic graphics pipeline with highlighted stage 5" width="175">
+                    <figcaption>Fifth Stage</figcaption>
+                </figure>
+                <p>After positioning objects in view space, the <strong>Projection Transformation</strong> step converts 3D coordinates into 2D screen positions. This step maps spatial points onto the plane of the screen, enabling the renderer to visualize the 3D scene from the camera’s viewpoint. The primary purpose is to simulate the effect of perspective, creating a realistic representation of depth and distance.</p>
+                
+                <h3>Orthographic Projection</h3>
+                <figure>
+                    <img src="rendering.png" alt="Camera view ray and light shadow ray intersecting a scene object" width="250">
+                    <figcaption>View Projection onto Image Plane</figcaption>
+                </figure>
+                <p>In general, there are two common projection approaches:</p>
+                <ul>
+                    <li><strong>Orthographic Projection</strong>: Parallel lines remain parallel after projection, ignoring depth and perspective distortion. Ideal for technical drawings.</li>
+                    <li><strong>Perspective Projection</strong>: Simulates human vision by making distant objects appear smaller. Parallel lines converge toward a vanishing point, creating depth perception.</li>
+                </ul>
+                <figure>
+                    <img src="projections.png" alt="Comparison of perspective and orthographic projection showing size distortion" width="350">
+                    <figcaption>Perspective vs Orthographic Projection</figcaption>
+                </figure>
+                <p>This implementation employs a simplified version of orthographic projection:</p>
+                <pre><code class="cpp language-cpp">// utils/mathematics.cpp
+
+static Vec3 to_screen(const Vec3 &amp;v, float zoom, float width, float height)
+{
+    float x = v.x * zoom + width * 0.5f;
+    float y = v.y * zoom + height * 0.5f;
+    return Vec3(x, y, v.z);
+}</code></pre>
+                <p>This projection:</p>
+                <ol>
+                    <li>Scales X and Y coordinates by the zoom factor</li>
+                    <li>Centers the result in screen space</li>
+                    <li>Preserves Z coordinate for depth testing</li>
+                </ol>
+                <p>For this task of inspecting a single 3D model, perspective projection is unnecessary. Instead, an orthographic projection is sufficient, as it simply involves rotating and viewing the model. Perspective projection, on the other hand, is more suitable for achieving artistic realism, as it simulates how the human eye perceives objects.</p>
+
+                <h2>The Visibility Problem</h2>
+                <figure>
+                    <img src="stage-six.png" alt="Diagram of classic graphics pipeline with highlighted stage 6" width="175">
+                    <figcaption>Sixth Stage</figcaption>
+                </figure>
+                <p>In 3D rendering, the visibility problem asks: which parts of the scene are actually visible to the camera? This seemingly simple question has profound performance implications. Without visibility determination, we'd waste computational resources processing geometry that never appears on screen.</p>
+                <p>The challenge grows with scene complexity. A detailed 3D model might contain millions of triangles, but only a fraction are visible from any given viewpoint. Efficient visibility determination can reduce the workload by orders of magnitude, making the difference between real-time rendering and a slideshow. The solution is the <strong>Clipping</strong>, the next stage of our graphic pipeline.</p>
+
+                <h3>Common Visibility Solutions</h3>
+                <figure>
+                    <img src="culling.png" alt="Types of geometry culling including frustum, backface, portal, occlusion, and detail" width="350">
+                    <figcaption>Common Geometry Culling Techniques</figcaption>
+                </figure>
+                <p>Graphics systems employ various techniques to solve the visibility problem, each targeting different aspects:</p>
+                <ul>
+                    <li><strong>View Frustum Culling</strong>: The view frustum is the 3D region visible to the camera - a truncated pyramid extending from the near to far clipping planes. Objects entirely outside this volume can't possibly appear on screen. </li>
+                    <li><strong>Detail Culling</strong>: Level-of-detail systems adjust geometric complexity based on screen coverage. Distant objects use simplified meshes since fine details aren't visible anyway. This reduces both vertex processing and rasterization load, but requires multiple versions of each model and smooth transitions between detail levels.</li>
+                    <li><strong>Back-Face Culling</strong>: For closed surfaces, roughly half the triangles face away from any viewpoint. Back-face culling exploits this by testing triangle orientation and discarding those facing backward. </li>
+                    <li><strong>Occlusion Culling</strong>: Objects hidden behind other opaque geometry are occluded. Occlusion culling identifies and skips these hidden objects entirely. Hardware occlusion queries test whether any pixels pass the depth test, while software solutions might use hierarchical trees.</li>
+                    <li><strong>Portal Culling</strong>: Architectural environments often consist of rooms connected by portals (doors, windows). Portal culling recursively renders only rooms visible through these openings, dramatically reducing the working set. </li>
                 </ul>
 
-                <p>
-                    Every classical stage is implemented, albeit in reduced form. Full clipping is omitted deliberately due to its marginal benefit at this scale, but the rest of the pipeline remains structurally faithful, which we will discuss in more detail below.
-                </p>
+                <h3>Our Strategy</h3>
+                <p>Since our renderer focuses on displaying a single, centered model in isolation, without complex environments, architectural layouts, or varying model resolutions, our renderer implements a focused subset of visibility techniques appropriate for its design constraints. </p>
 
-            </section>
+                <h4>Back-Face Culling</h4>
+                <figure>
+                    <img src="back.png" alt="View direction and surface normal used to detect backface" width="250">
+                    <figcaption>Backface Culling Using Polygon Normal</figcaption>
+                </figure>
+                <p>Back-Face Culling forms our primary optimization. The method tests whether a triangle faces toward or away from the camera by examining the angle between the viewing direction and the polygon normal. If this angle exceeds 90 degrees, the polygon faces away and can be discarded.</p>
+                <pre><code class="cpp language-cpp">// entities/rendering/renderer.cpp
+
+...
+
+// back-face culling in camera space
+Vec3 normal_cam = Vec3::cross(rv2 - rv1, rv3 - rv1).normalize();
+if (normal_cam.z &gt;= 0.0f)
+{
+    continue;
+}
+
+...</code></pre>
+                <p>This works because in our right-handed view space, triangles with positive Z normals face away from the camera at the origin. For typical closed models, this eliminates roughly 50% of triangles before rasterization even begins.</p>
+
+                <h4>View Frustum Culling</h4>
+                <p>Instead of explicit frustum testing, we implement implicit screen-space clipping during rasterization:</p>
+                <pre><code class="cpp language-cpp">// entities/rendering/buffer.cpp
+
+...
+
+if (x_f &lt; 0.f || x_i &gt; logical_x)
+    return;  // triangle entirely outside horizontal bounds
+
+if (y_max &lt; 0.f || y_min &gt; logical_y)
+    continue;  // column entirely outside vertical bounds
+
+...</code></pre>
+                <p>This approach leverages the rasterizer's existing bounds checking. When triangles extend beyond screen boundaries, we simply skip pixels that fall outside the buffer. While less efficient than geometric clipping for large off-screen triangles, it eliminates the complexity of maintaining frustum planes and handling partially visible triangles.</p>
+
+                <h4>Occlusion Culling</h4>
+                <p>The buffer serves as the bridge between 3D geometry and 2D display, accumulating the final image before terminal output.</p>
+                <pre><code class="cpp language-cpp">// entities/rendering/buffer.h
+
+class Buffer {
+public:
+    unsigned int x, y;          // character buffer size
+    float logical_x, logical_y; // logical buffer size
+    float dx, dy;               // logical character size
+    std::vector&lt;Pixel&gt; pixels;  // pixel buffer
+
+    ...
+}</code></pre>
+
+                <h5>Pixel Representation</h5>
+                <pre><code class="cpp language-cpp">// entities/rendering/buffer.h
+
+class Pixel {
+public:
+    float z;                        // depth (z-coordinate)
+    char c;                         // character
+    std::optional&lt;int&gt; material;    // material index
+
+    Pixel() : z(std::numeric_limits&lt;float&gt;::max()), c(' '), material(std::nullopt) {}
+};</code></pre>
+                <p>Each pixel stores its closest surface's depth, character representation, and optional material. Initializing depth to maximum float ensures any rendered geometry appears in front of the cleared background.</p>
+
+                <h5>Z-Buffer Algorithm</h5>
+                <figure>
+                    <img src="z.png" alt="Color image of 3D scene and corresponding grayscale Z-buffer depth image" width="175">
+                    <figcaption>Z-Buffer Depth Representation</figcaption>
+                </figure>
+                <p>The Z-buffer (or depth buffer) algorithm elegantly solves the visibility problem, determining which surfaces are visible when multiple triangles overlap:</p>
+                <pre><code class="cpp language-cpp">// entities/rendering/buffer.cpp
+
+...
+
+for (int pixel_y = y_start; pixel_y &lt;= y_end; pixel_y++)
+{
+    Pixel &amp;pixel = pixels[pixel_y * x + pixel_x];
+
+    if (const float z = depth(triangle, normal, pixel_x, pixel_y); z &lt; pixel.z)
+    {
+        pixel.z = z;
+        pixel.c = c;
+        pixel.material = material;
+    }
+}
+
+...</code></pre>
+                <p>For each pixel covered by a triangle, we compute its depth and compare with the stored value. Only closer surfaces update the pixel, automatically handling complex overlap scenarios.</p>
+
+                <h2>Screen Space Mapping</h3>
+                <p>The projected coordinates initially exist in a resolution-independent "logical space", which abstracts the rendering dimensions from physical screen dimensions. This logical space simplifies the management of aspect ratios and ensures consistent rendering across diverse terminal resolutions.</p>
+                <figure>
+                    <img src="stage-seven.png" alt="Diagram of classic graphics pipeline with highlighted stage 7" width="175">
+                    <figcaption>Seventh Stage</figcaption>
+                </figure>                
+                <p>Mapping logical coordinates to actual character positions occurs within the rendering buffer during <strong>Viewport Transformaion</strong> stage:</p>
+                <pre><code class="cpp language-cpp">// entities/rendering/buffer.h
+
+Buffer::Buffer(const unsigned int x, const unsigned int y, const float logical_x, const float logical_y) : x(x), y(y), logical_x(logical_x), logical_y(logical_y)
+{
+    dx = logical_x / static_cast&lt;float&gt;(x);
+    dy = logical_y / static_cast&lt;float&gt;(y);
+
+    ...
+}</code></pre>
+                <p>The logical space maintains aspect ratio across different terminal sizes. Character cells aren't square (typically 2:1 ratio), so the logical dimensions compensate to prevent distortion.</p>
+                <pre><code class="cpp language-cpp">// config.h
+inline constexpr float CHAR_ASPECT_RATIO = 2.0f;</code></pre>
+                <pre><code class="cpp language-cpp">// main.cpp
+
+...
+
+const float logical_y = 2.0f;
+const float logical_x = logical_y * static_cast&lt;float&gt;(cols) / (static_cast&lt;float&gt;(rows) * CHAR_ASPECT_RATIO);
+
+...</code></pre>
+
+                <h2>Rasterization</h2>
+                <figure>
+                    <img src="stage-eight.png" alt="Diagram of classic graphics pipeline with highlighted stage 8" width="175">
+                    <figcaption>Eighth Stage</figcaption>
+                </figure>
+                <p><strong>Scan Conversion</strong> stage is responsible for conversion of geometric primitives into discrete pixels - the fundamental transformation from continuous mathematics to the discrete grid of a display. While simple shapes like lines and circles have direct drawing algorithms, arbitrary polygons present a challenge that has shaped computer graphics since its inception.</p>
+
+                <h3>Challenge</h3>
+                <p>The native approach to polygon rasterization is testing every pixel to see if it lies inside the shape, bit it scales poorly. For a polygon covering n pixels, this requires n point-in-polygon tests, each involving multiple edge calculations. Complex concave polygons make this even worse, as the point-in-polygon test itself becomes non-trivial with multiple possible intersections.</p>
+                <p>This is why better to decompose polygon into triangles. The convexity of triangle (what we discussed before) enables efficient scanline algorithms that visit each pixel exactly once.</p>
+
+                <h3>Scanline Algorithm</h3>
+                <figure>
+                    <img src="scan.png" alt="Scanline rasterization of a triangle showing pixel grid" width="175">
+                    <figcaption>Triangle Rasterization Using Scanline Algorithm</figcaption>
+                </figure>
+                <p>Our implementation uses <strong>Vertical Scanline Rasterization</strong> - sweeping across the triangle from left to right, filling pixels column by column:</p>
+                <pre><code class="cpp language-cpp">// entities/rendering/buffer.cpp
+
+void Buffer::draw_projection(const Projection &amp;projection, const char c, int material)
+{
+    const Projection triangle = projection.sort_x();
+
+    const float x_i = triangle.p1.x + dx * 0.5f;
+    const float x_f = triangle.p3.x - dx * 0.5f;
+
+    if (x_f &lt; 0.f || x_i &gt; logical_x)
+        return;
+
+    const int x_start = index_x(x_i);
+    const int x_end = index_x(x_f);
+
+    ...
+}</code></pre>
+                <p>The algorithm begins by sorting vertices horizontally, establishing a consistent traversal order. For each vertical scanline within the triangle's bounds, we determine where it enters and exits the triangle by interpolating along the active edges. This approach exploits triangles' convexity: any vertical line intersects the triangle in at most one continuous segment.</p>
+                
+                <h3>Edge Walking</h3>
+                <p>The core of the algorithm tracks which edges are "active" at each X position and interpolates along them:</p>
+                <pre><code class="cpp language-cpp">// entities/rendering/buffer.cpp
+
+float Projection::limit_y1(const float x) const
+{
+    if (x &lt;= p1.x) 
+        return p1.y;
+    if (x &gt;= p3.x) 
+        return p3.y;
+
+    if (x &lt;= p2.x)
+    {
+        const float t = (x - p1.x) / (p2.x - p1.x);
+        return lerp(p1.y, p2.y, t);
+    }
+    else
+    {
+        const float t = (x - p2.x) / (p3.x - p2.x);
+        return lerp(p2.y, p3.y, t);
+    }
+}</code></pre>
+                <p>This edge-walking function smoothly transitions between triangle edges as the scanline progresses. Before the middle vertex, it follows one edge. After, it switches to the next. The companion function <code>limit_y2</code> traces the long edge, and together they define the exact vertical span to fill for each column.</p>
+
+                <h3>Pixel-Perfect Rendering</h3>
+                <p>The implementation carefully handles sub-pixel precision to avoid gaps between adjacent triangles. By sampling at pixel centers and using half-pixel offsets at boundaries, we ensure watertight rendering even at low resolutions. This attention to numerical precision prevents the flickering artifacts that plague simpler rasterizers.</p>
+                <p>The elegance of scanline rasterization lies in its transformation of a complex area-filling problem into a series of simple one-dimensional spans. By leveraging triangles' geometric properties, we achieve efficient, accurate rendering with minimal computational overhead.</p>
+
+                <h2>Final Image</h2>
+                <figure>
+                    <img src="stage-nine.png" alt="Diagram of classic graphics pipeline with highlighted stage 9" width="175">
+                    <figcaption>Ninth Stage</figcaption>
+                </figure>
+                <p>The complete rendering pipeline orchestrates all previous stages to transform a 3D model into ASCII art. There won't be anything as interesting as described above, since this section focuses more on the implementation in code and mathematics. But this is where abstract concepts become concrete implementation.</p>
+
+                <h3>Rendering Loop</h3>
+                <p>The renderer brings together all components we've discussed in a carefully orchestrated sequence. Rather than calling expensive trigonometric functions for each vertex, we pre-compute sine and cosine values once per frame. This optimization alone can reduce rendering time by 30% for complex models, demonstrating how small implementation details can have significant performance impact.</p>
+
+                <h3>Two-Pass Strategy</h3>
+                <p>The <code>Renderer::render()</code> employs a two-pass approach that solves a fundamental problem: how to center the model on screen when we don't know its transformed bounds until after transformation?</p>
+
+                <h4>First Pass - Transform and Measure</h4>
+                <pre><code class="cpp language-cpp">// entities/rendering/renderer.cpp 
+
+...
+
+std::vector&lt;Vec3&gt; rverts(vcount);   // rotated vertices
+std::vector&lt;Vec3&gt; sverts(vcount);   // screen coordinates
+
+for (size_t i = 0; i &lt; vcount; i++)
+{
+    const Vec3 rv = rot_x(rot_y(obj.vertices[i]));
+    rverts[i] = rv;
+
+    const Vec3 sv = Vec3::to_screen(rv, cam.zoom, lx, ly);
+    sverts[i] = sv;
+
+    min_x = std::min(min_x, sv.x);
+    max_x = std::max(max_x, sv.x);
+    min_y = std::min(min_y, sv.y);
+    max_y = std::max(max_y, sv.y);
+}
+
+...</code></pre>
+                <p>Every vertex is transformed exactly once, storing both rotated positions (for lighting calculations) and screen positions (for rasterization). As vertices are processed, the algorithm tracks the screen-space bounding box. This vertex caching is crucial - a typical mesh shares each vertex among 6 triangles on average, so caching reduces transformation cost by 83%.</p>
+
+                <h4>Second Pass - Render with Centering</h4>
+                <pre><code class="cpp language-cpp">// entities/rendering/renderer.cpp 
+
+...
+
+const float off_y = (ly - (max_y - min_y)) * 0.5f - min_y;
+const Vec3 offset(0.0f, off_y, 0.0f);
+
+for (const auto &amp;face : obj.faces)
+{
+    const Vec3 &amp;rv1 = rverts[face.indices[0]];
+    const Vec3 &amp;rv2 = rverts[face.indices[1]];
+    const Vec3 &amp;rv3 = rverts[face.indices[2]];
+
+    // Back-face culling
+    Vec3 normal_cam = Vec3::cross(rv2 - rv1, rv3 - rv1).normalize();
+    if (normal_cam.z &gt;= 0.0f)
+        continue;
+
+    ...</code></pre>
+                <p>Using the computed bounds, a vertical offset is calculated that perfectly centers the model in the terminal window. Each triangle then undergoes back-face culling, shading calculation, projection with centering, and finally rasterization into the pixel buffer.</p>
+
+                <h3>Terminal Output Strategy</h3>
+                <p>Converting the pixel buffer into terminal commands seems simple but hides significant complexity. Color changes in terminals are expensive, each requires multiple bytes of control codes. By tracking the previous color and only sending changes when necessary, we reduce output bandwidth by up to 90% for models with large same-colored regions.</p>
+                <pre><code class="cpp language-cpp">// entities/rendering/buffer.cpp 
+
+void Buffer::printw() const
+{
+   for (unsigned int row = 0; row &lt; y; row++)
+   {
+       ::move(static_cast&lt;int&gt;(row), 0);
+       int prev_color = -1;
+
+       for (unsigned int col = 0; col &lt; x; col++)
+       {
+           const Pixel &amp;pixel = pixels[row * x + col];
+
+           // only change color when necessary
+           int color = pixel.material ? (pixel.material.value() + 1) : 0;
+           if (color != prev_color)
+           {
+               if (prev_color &gt; 0) attroff(COLOR_PAIR(prev_color));
+               if (color &gt; 0) attron(COLOR_PAIR(color));
+               prev_color = color;
+           }
+
+           ::printw("%c", pixel.c);
+       }
+   }
+}</code></pre>
+                <p>The output routine moves the cursor once per row, batches color changes, and uses ncurses' buffered output to minimize flicker. These optimizations are essential for smooth animation, especially over SSH connections where bandwidth is limited.</p>
+
+                <h3>Frame Rate Considerations</h3>
+                <p>A <code>needs_redraw</code> flag ensures rendering only occurs when something changes - camera movement, window resize, or animation. This lazy evaluation approach means that a static model consumes zero CPU when the user isn't interacting with it. Combined with ncurses' double-buffering, this creates flicker-free animation even on slower terminals.</p>
+                <pre><code class="cpp language-cpp">// main.cpp
+
+...
+
+bool needs_redraw = true;
+
+while (true)
+{
+    if (rotate) {
+        cam.rotate_left(args.speed * dt);
+        needs_redraw = true;
+    }
+
+    if (needs_redraw)
+    {
+        buf.clear();
+        Renderer::render(buf, obj, cam, light, args.static_light, args.color_support);
+        buf.printw();
+        refresh();
+        needs_redraw = false;
+    }
+}
+
+...</code></pre>
+
+                <h2>Conclusion</h2>
+                <p>This article is my attempt to collect and explain the knowledge that accumulated in my head over the course of a year - scattered across different books, lecture notes, and personal experiments. The goal was to distill everything I learned about 3D graphics fundamentals into something comprehensible in a single read. This isn't a comprehensive textbook and doesn't cover every nuance or edge case, but I hope it helps someone understand the core concepts without spending months digging through academic papers and outdated documentation.</p>
+                <p>It is also my first experience writing a technical article in a scientific format outside of university. While I usually write internal documentation, working on something with a more public and educational intent turned out to be both an interesting and challenging process. Structuring technical knowledge clearly, selecting what matters, and keeping the content concise took much more effort than expected.</p>
+                <p>The project itself was purely a personal challenge - I love "from scratch" implementations, and building a 3D renderer with nothing but basic math and a terminal felt like the kind of problem worth tackling. Not because it's practical, but because it proves it can be done. Sometimes that's reason enough.</p>
+                <p>I genuinely hope this article helped clarify things rather than confuse them further!</p>
+            </div>
 
         </section>
 

@@ -22,10 +22,10 @@
 }
 
 @font-face {
-    font-family: "Mononoki";
-    src: url('/resources/fonts/mononoki-BoldItalic.ttf');
-    font-weight: bold;
-    font-style: italic;
+    font-family: "Consolas";
+    src: url('/resources/fonts/consolas.ttf');
+    font-weight: normal;
+    font-style: normal;
 }
 
 :root {
@@ -71,11 +71,87 @@ hr {
     margin: 30px 0;
 }
 
+h1 {
+    font-size: 2rem;
+}
+
+h2 {
+    font-size: 1.6rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+h5 {
+    font-size: 1rem;
+}
+
+h6 {
+    font-size: 0.8rem;
+}
+
+.numbered {
+    counter-reset: h2;
+}
+
+.numbered h2 {
+    counter-reset: h3;
+    counter-increment: h2;
+}
+
+.numbered h3 {
+    counter-reset: h4;
+    counter-increment: h3;
+}
+
+.numbered h4 {
+    counter-reset: h5;
+    counter-increment: h4;
+}
+
+.numbered h5 {
+    counter-reset: h6;
+    counter-increment: h5;
+}
+
+.numbered h6 {
+    counter-increment: h6;
+}
+
+
+.numbered h2::before {
+    content: counter(h2) ". ";
+}
+
+.numbered h3::before {
+    content: counter(h2) "." counter(h3) ". ";
+}
+
+.numbered h4::before {
+    content: counter(h2) "." counter(h3) "." counter(h4) ". ";
+}
+
+.numbered h5::before {
+    content: counter(h2) "." counter(h3) "." counter(h4) "." counter(h5) ". ";
+}
+
+.numbered h6::before {
+    content: counter(h2) "." counter(h3) "." counter(h4) "." counter(h5) "." counter(h6) ". ";
+}
+
+
 code {
     background-color: var(--bg-code);
     padding: 0.2em 0.4em;
     border-radius: 4px;
-    font-size: 1em;
+    font-family: 'Consolas', monospace;
+    font-size: 1rem;
+    line-height: 1.2;
     color: var(--text-primary);
 }
 
