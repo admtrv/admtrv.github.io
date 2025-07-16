@@ -229,6 +229,12 @@ figcaption::before {
     margin-right: 10px;
 }
 
+.img-center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .card {
     text-decoration: none;
     color: inherit;
