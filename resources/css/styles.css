@@ -41,8 +41,8 @@
 }
 
 #animation {
-    font-family:"Mononoki", monospace;
-    white-space:pre;
+    font-family: "Mononoki", monospace;
+    white-space: pre;
     display: block;
     margin: 0 auto;
     line-height: 100%;
@@ -55,6 +55,7 @@
 
 html {
     font-size: 14px;
+    overflow-x: hidden;
 }
 
 body {
@@ -66,12 +67,16 @@ body {
     letter-spacing: 0.3px;
     line-height: 200%;
     counter-reset: figure;
+    overflow-x: hidden;
 }
 
 hr {
     width: 100%;
-    border-top: 3px solid var(--color-primary);
+    height: 3px;
     margin: 30px 0;
+    border: 0;
+    background: var(--color-primary);
+    padding: 0;
 }
 
 h1 {
@@ -166,8 +171,11 @@ pre code {
 img {
     border: 3px solid var(--color-primary);
     border-radius: 0px;
-    max-width: 100%;
-    height: auto;
+}
+
+li {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 figure {
@@ -176,6 +184,10 @@ figure {
     align-items: center;
     justify-content: center;
     counter-increment: figure;
+}
+
+figcaption {
+    text-align: center;
 }
 
 figcaption::before {
@@ -232,13 +244,11 @@ figcaption::before {
 .img-right {
     float: right;
     margin-left: 10px;
-    max-width: 40%;
 }
 
 .img-left {
     float: left;
     margin-right: 10px;
-    max-width: 40%;
 }
 
 .img-center {
@@ -264,17 +274,59 @@ figcaption::before {
     font-style: italic;
 }
 
+.cookies-banner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background: var(--bg-section);
+    color: var(--text-primary);
+    border-top: 3px solid var(--color-primary);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    transform: translateY(100%);
+    transition: transform .2s ease;
+    font-family: inherit;
+    letter-spacing: inherit;
+    overflow: hidden;
+}
+
+.cookies-banner.show {
+    transform: translateY(0)
+}
+
+.cookies-banner-text {
+    flex: 1;
+    line-height: 1.35
+}
+
+.cookies-banner-link {
+    color: var(--text-primary);
+    text-decoration: underline;
+    display: inline-block;
+    font-weight: bold;
+    margin: 2px 0;
+    cursor: pointer
+}
+
+.cookies-banner-link:hover {
+    color: var(--color-primary)
+}
+
 @media screen and (max-width: 900px) {
     .outer-container {
         padding: 30px;
         margin: 10px;
         width: calc(100% - 20px);
     }
-    
+
     .nav-links {
         margin: 15px 20px;
     }
-    
+
     .content {
         margin: 15px 20px 30px;
     }
@@ -285,30 +337,62 @@ figcaption::before {
         padding: 20px;
         margin: 5px;
         width: calc(100% - 10px);
-        border-width: 2px;
     }
-    
+
     .nav-links {
         margin: 10px;
         font-size: 0.9rem;
     }
-    
+
     .content {
         margin: 10px;
     }
-    
+
     hr {
         margin: 20px 0;
         border-width: 2px;
     }
-    
-    h1 { font-size: 1.6rem; }
-    h2 { font-size: 1.4rem; }
-    h3 { font-size: 1.2rem; }
-    h4 { font-size: 1.1rem; }
-    h5 { font-size: 0.95rem; }
-    h6 { font-size: 0.85rem; }
-    
+
+    h1 {
+        font-size: 1.6rem;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+    }
+
+    h4 {
+        font-size: 1.1rem;
+    }
+
+    h5 {
+        font-size: 0.95rem;
+    }
+
+    h6 {
+        font-size: 0.85rem;
+    }
+
+    .card {
+        min-height: auto;
+    }
+
+    .card .img-right,
+    .card .img-left {
+        float: none;
+        display: block;
+        margin: 0 0 15px 0;
+        width: 100%;
+        height: auto !important;
+        max-width: 100%;
+        object-fit: cover;
+        box-sizing: border-box;
+    }
+
     .img-right,
     .img-left {
         float: none;
@@ -316,10 +400,28 @@ figcaption::before {
         margin: 10px auto;
         max-width: 100%;
     }
+
+    figure img {
+        max-width: 100%;
+        width: 100% !important;
+        height: auto;
+        box-sizing: border-box;
+    }
+
+    figcaption {
+        font-size: 0.85rem;
+        line-height: 1.4;
+        margin-top: 10px;
+    }
 }
 
 @media screen and (max-width: 400px) {
     .outer-container {
         padding: 15px;
+    }
+
+    figcaption {
+        font-size: 0.75rem;
+        line-height: 1.3;
     }
 }

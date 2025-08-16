@@ -7,10 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.text())
         .then(headerHtml => {
             document.getElementById('header-container').innerHTML = headerHtml;
-            
+
             setActiveSection();
 
             loadAnimation(() => setUpAnimation());
+
+            loadNoCookiesBanner();
         })
         .catch(error => console.error('Error loading header:', error));
 });
@@ -26,7 +28,6 @@ function setActiveSection() {
         }
     });
 }
-
 
 function loadAnimation(callback) {
     const script = document.createElement('script');
@@ -45,7 +46,6 @@ function loadAnimation(callback) {
     document.body.appendChild(script);
 }
 
-
 function setUpAnimation() {
     const activeSection = document.body.dataset.section || 'default';
     const animationElement = document.getElementById('animation');
@@ -55,4 +55,36 @@ function setUpAnimation() {
         animationInit(activeTitle, activeSection);
         animationLoop();
     }
+}
+
+function loadNoCookiesBanner() {
+    const KEY = 'cookies-banner-ack';
+    try { if (sessionStorage.getItem(KEY)) return; } catch (e) { }
+
+    fetch('/components/cookies.html')
+        .then(r => r.text())
+        .then(html => {
+            document.body.insertAdjacentHTML('beforeend', html);
+
+            const banner = document.getElementById('cookies-banner');
+            const ok = document.getElementById('cookies-banner-ok');
+            if (!banner || !ok) return;
+
+            const onKey = e => { if (e.key === 'Escape') hide(); };
+
+            const hide = () => {
+                banner.classList.remove('show');
+                try { sessionStorage.setItem(KEY, '1'); } catch (e) { }
+                setTimeout(() => banner.remove(), 200);
+                document.removeEventListener('keydown', onKey);
+            };
+
+            setTimeout(() => {
+                banner.classList.add('show');
+                document.addEventListener('keydown', onKey);
+            }, 300);
+
+            ok.addEventListener('click', e => { e.preventDefault(); hide(); });
+        })
+        .catch(err => console.error('Error loading banner:', err));
 }
