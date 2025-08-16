@@ -2,11 +2,16 @@
  * animation.js
  */
 
-const animationWidth = 90;
-const animationHeight = 9;
+// dynamic dimensions auto by available space
+let animationWidth = 90;
+let animationHeight = 9;
 
 const animationUpdateRate = 0.9
 const animationDeltaTime = 0.005
+
+// character size in px approx monospace
+const CHAR_WIDTH = 8.4;     // approx char width at 14px
+const CHAR_HEIGHT = 14;     // line height in px
 
 const animationAsciiPallet = [
     "rgb",
@@ -69,6 +74,9 @@ var animationDataCurrent = {};
 var animationBoard = [];
 
 var animationTime = 0;
+
+// resize debounce timeout
+let resizeTimeout;
 
 function seedHash(seed) {   // djb2
     let hash = 5381;
@@ -150,6 +158,145 @@ function PerlinNoise(x, y, octaves) {
     return Math.max(Math.min(result, 1), 0);
 }
 
+// calc dimensions by available space
+function calculateDimensions() {
+    const animationElement = document.getElementById('animation');
+    if (!animationElement) return;
+    
+    const container = animationElement.parentElement;
+    if (!container) return;
+    
+    // available width in px
+    const containerStyle = window.getComputedStyle(container);
+    const containerPadding = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+    const availableWidth = container.clientWidth - containerPadding;
+    
+    // max chars horizontal
+    const maxCharsHorizontal = Math.floor(availableWidth / CHAR_WIDTH);
+    
+    // min and max width
+    // min should allow wrapped text
+    const MIN_WIDTH = 20;
+    const MAX_WIDTH = 120;
+    animationWidth = Math.max(MIN_WIDTH, Math.min(maxCharsHorizontal, MAX_WIDTH));
+    
+    // height by title wrapping
+    animationHeight = calculateRequiredHeight();
+}
+
+// split text into words
+function splitIntoWords(text) {
+    // split by spaces keep spaces
+    const words = [];
+    let currentWord = "";
+    
+    for (let i = 0; i < text.length; i++) {
+        if (text[i] === ' ') {
+            if (currentWord.length > 0) {
+                words.push(currentWord);
+                currentWord = "";
+            }
+            // add space element for multiple spaces
+            if (i === 0 || text[i - 1] !== ' ') {
+                words.push(' ');
+            }
+        } else {
+            currentWord += text[i];
+        }
+    }
+    
+    if (currentWord.length > 0) {
+        words.push(currentWord);
+    }
+    
+    return words;
+}
+
+// word wrap
+function wrapTextByWords(text, maxWidth) {
+    const words = splitIntoWords(text);
+    const lines = [];
+    let currentLine = "";
+    
+    for (const word of words) {
+        if (word === ' ') {
+            // add space if room
+            if (currentLine.length > 0 && currentLine.length < maxWidth) {
+                currentLine += ' ';
+            }
+        } else {
+            // if word fits
+            const testLine = currentLine.length === 0 ? word : currentLine + word;
+            
+            if (testLine.length <= maxWidth) {
+                currentLine = testLine;
+            } else {
+                // new line
+                if (currentLine.length > 0) {
+                    // trim trailing space
+                    lines.push(currentLine.trim());
+                    currentLine = word;
+                } else {
+                    // force break long word
+                    lines.push(word.substring(0, maxWidth));
+                    currentLine = word.substring(maxWidth);
+                }
+            }
+        }
+    }
+    
+    if (currentLine.length > 0) {
+        lines.push(currentLine.trim());
+    }
+    
+    return lines;
+}
+
+// rows needed for title
+function calculateRequiredHeight() {
+    const TEXT_PADDING = 2;         // 2 chars padding
+    const ANIMATION_BORDER = 1;     // 1 char animation border
+    const MIN_HEIGHT = 9;           // min height
+    const MAX_HEIGHT = 15;          // max height
+    
+    if (!animationCurrentTitle || animationCurrentTitle === "") {
+        return 9; // default height no title
+    }
+    
+    // available width for title
+    const availableForTitle = animationWidth - (TEXT_PADDING * 2) - (ANIMATION_BORDER * 2);
+    
+    if (availableForTitle <= 0) {
+        return MIN_HEIGHT;
+    }
+    
+    // wrap and count lines
+    const lines = wrapTextByWords(animationCurrentTitle, availableForTitle);
+    const linesNeeded = lines.length;
+    
+    // total height
+    const calculatedHeight = 3 + 1 + linesNeeded + 1 + 3;
+    
+    return Math.max(MIN_HEIGHT, Math.min(calculatedHeight, MAX_HEIGHT));
+}
+
+// window resize handler
+function handleResize() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        const oldWidth = animationWidth;
+        const oldHeight = animationHeight;
+        
+        calculateDimensions();
+        
+        // reinit only if size changed
+        if (oldWidth !== animationWidth || oldHeight !== animationHeight) {
+            initBoard();
+            updateBoard();
+        }
+    }, 150); // debounce resize
+}
+
 function animationInit(title, seed) {
     animationDefaultTitle = title;
     animationDefaultSeed = seed;
@@ -157,20 +304,46 @@ function animationInit(title, seed) {
     animationCurrentTitle = animationDefaultTitle;
     animationCurrentSeed = animationDefaultSeed;
 
+    // initial dimensions
+    calculateDimensions();
+    
     initData();
     animationDataCurrent = { ...animationDataTarget };
     initBoard();
+    
+    // add resize listener
+    window.addEventListener('resize', handleResize);
 }
  
 function animationSetTitle(title, seed) {
+    const oldTitle = animationCurrentTitle;
     animationCurrentTitle = title;
     animationCurrentSeed = seed;
+    
+    // recalc height on title change
+    const oldHeight = animationHeight;
+    animationHeight = calculateRequiredHeight();
+    
+    if (oldHeight !== animationHeight) {
+        initBoard();
+    }
+    
     initData();
 }
 
 function animationClearTitle() {
+    const oldTitle = animationCurrentTitle;
     animationCurrentTitle = animationDefaultTitle;
     animationCurrentSeed = animationDefaultSeed;
+    
+    // recalc height on title change
+    const oldHeight = animationHeight;
+    animationHeight = calculateRequiredHeight();
+    
+    if (oldHeight !== animationHeight) {
+        initBoard();
+    }
+    
     initData();
 }
 
@@ -266,37 +439,229 @@ function initBoard() {
 }
 
 function updateBoard() {
-    const boardCenterWidth = Math.floor(animationWidth / 2);
-    const boardCenterHeight = Math.floor(animationHeight / 2);
-    const margin = 2;
-
-    let titleHalfLength = Math.floor(animationCurrentTitle.length / 2);
-    let titleStart = boardCenterWidth - titleHalfLength;
-    let titleEnd = boardCenterWidth + titleHalfLength;
-    if (animationCurrentTitle.length % 2 === 0) {
-        titleEnd -= 1;
+    const TEXT_PADDING = 2;         // 2 chars padding around text
+    const ANIMATION_BORDER = 1;     // 1 char animation border
+    
+    // title wrap
+    if (animationCurrentTitle && animationCurrentTitle !== "") {
+        const availableWidth = animationWidth - (TEXT_PADDING * 2) - (ANIMATION_BORDER * 2);
+        
+        if (availableWidth > 0) {
+            // single line
+            if (animationCurrentTitle.length <= availableWidth) {
+                updateBoardSingleLineTitle();
+            } else {
+                // multi line
+                updateBoardMultiLineTitle();
+            }
+        } else {
+            // no space for title
+            updateBoardNoTitle();
+        }
+    } else {
+        // no title
+        updateBoardNoTitle();
     }
+}
 
-    let topRow = boardCenterHeight - 1;
-    let downRow = boardCenterHeight + 1;
+function updateBoardSingleLineTitle() {
+    const boardCenterHeight = Math.floor(animationHeight / 2);
+    const TEXT_PADDING = 2;         // 2 chars padding around text
+    const ANIMATION_BORDER = 1;     // 1 char animation border
+    
+    // symmetric horizontal pos
+    const totalTextWidth = animationCurrentTitle.length;
+    const totalBoxWidth = totalTextWidth + (TEXT_PADDING * 2) + (ANIMATION_BORDER * 2);
+    
+    // split remaining space evenly
+    const remainingSpace = animationWidth - totalBoxWidth;
+    const leftSpace = Math.floor(remainingSpace / 2);
+    const rightSpace = remainingSpace - leftSpace;
+    
+    const boxStartX = leftSpace;
+    const boxEndX = animationWidth - rightSpace - 1;
+    
+    // title pos
+    const titleStart = boxStartX + ANIMATION_BORDER + TEXT_PADDING;
+    const titleEnd = titleStart + totalTextWidth - 1;
+    
+    // inner bounds
+    const paddingStartX = boxStartX + ANIMATION_BORDER;
+    const paddingEndX = boxEndX - ANIMATION_BORDER;
+    
+    // vertical bounds
+    const titleRow = boardCenterHeight;
+    const boxStartY = titleRow - 1;
+    const boxEndY = titleRow + 1;
 
     for (let y = 0; y < animationHeight; y++) {
         for (let x = 0; x < animationWidth; x++) {
             const cellIndex = y * animationWidth + x;
             const cell = animationBoard[cellIndex];
 
-            if ( animationCurrentTitle === "" || y < topRow || y > downRow || x < titleStart - margin || x > titleEnd + margin) {
-                const { color, character } = generate(x, y);    // non-title cell
+            // outside box
+            if (y < boxStartY || y > boxEndY || x < boxStartX || x > boxEndX) {
+                const { color, character } = generate(x, y);
                 cell.style.color = color;
                 cell.textContent = character;
-            } else if (y === topRow + 1 && x >= titleStart && x <= titleEnd) {
-                const titleCharIndex = x - titleStart;  // title cell
-                cell.style.color = textColor;
-                cell.textContent = animationCurrentTitle[titleCharIndex];
-            } else {    // title stroke
+            } 
+            // top or bottom rows
+            else if ((y === boxStartY || y === boxEndY) && x >= boxStartX && x <= boxEndX) {
+                if (x === boxStartX || x === boxEndX) {
+                    // corners
+                    const { color, character } = generate(x, y);
+                    cell.style.color = color;
+                    cell.textContent = character;
+                } else if (x >= paddingStartX && x <= paddingEndX) {
+                    // white padding
+                    cell.style.color = textColor;
+                    cell.textContent = " ";
+                } else {
+                    // border sides
+                    const { color, character } = generate(x, y);
+                    cell.style.color = color;
+                    cell.textContent = character;
+                }
+            }
+            // middle row
+            else if (y === titleRow) {
+                if (x === boxStartX || x === boxEndX) {
+                    // left right border
+                    const { color, character } = generate(x, y);
+                    cell.style.color = color;
+                    cell.textContent = character;
+                } else if (x >= titleStart && x <= titleEnd) {
+                    // title text
+                    const titleCharIndex = x - titleStart;
+                    cell.style.color = textColor;
+                    cell.textContent = animationCurrentTitle[titleCharIndex];
+                } else {
+                    // white padding
+                    cell.style.color = textColor;
+                    cell.textContent = " ";
+                }
+            }
+            else {
+                // safety
                 cell.style.color = textColor;
                 cell.textContent = " ";
             }
+        }
+    }
+}
+
+function updateBoardMultiLineTitle() {
+    const TEXT_PADDING = 2;         // 2 chars padding around text
+    const ANIMATION_BORDER = 1;     // 1 char animation border
+    const availableWidth = animationWidth - (TEXT_PADDING * 2) - (ANIMATION_BORDER * 2);
+    
+    // wrap lines
+    const lines = wrapTextByWords(animationCurrentTitle, availableWidth);
+    
+    // max line length
+    let maxLineLength = 0;
+    for (const line of lines) {
+        maxLineLength = Math.max(maxLineLength, line.length);
+    }
+    
+    // symmetric box
+    const totalBoxWidth = maxLineLength + (TEXT_PADDING * 2) + (ANIMATION_BORDER * 2);
+    
+    // split remaining space evenly
+    const remainingSpace = animationWidth - totalBoxWidth;
+    const leftSpace = Math.floor(remainingSpace / 2);
+    const rightSpace = remainingSpace - leftSpace;
+    
+    const boxStartX = leftSpace;
+    const boxEndX = animationWidth - rightSpace - 1;
+    
+    // vertical pos
+    const textBlockHeight = lines.length + 2;
+    const boxStartY = Math.floor((animationHeight - textBlockHeight) / 2);
+    const boxEndY = boxStartY + textBlockHeight - 1;
+    
+    // inner bounds
+    const paddingStartX = boxStartX + ANIMATION_BORDER;
+    const paddingEndX = boxEndX - ANIMATION_BORDER;
+    const textStartX = boxStartX + ANIMATION_BORDER + TEXT_PADDING;
+    const textAreaWidth = maxLineLength;
+    
+    for (let y = 0; y < animationHeight; y++) {
+        for (let x = 0; x < animationWidth; x++) {
+            const cellIndex = y * animationWidth + x;
+            const cell = animationBoard[cellIndex];
+            
+            // outside box
+            if (y < boxStartY || y > boxEndY || x < boxStartX || x > boxEndX) {
+                const { color, character } = generate(x, y);
+                cell.style.color = color;
+                cell.textContent = character;
+            }
+            // top or bottom rows
+            else if (y === boxStartY || y === boxEndY) {
+                if (x === boxStartX || x === boxEndX) {
+                    // corners
+                    const { color, character } = generate(x, y);
+                    cell.style.color = color;
+                    cell.textContent = character;
+                } else if (x > boxStartX && x < boxEndX) {
+                    if (x >= paddingStartX && x <= paddingEndX) {
+                        // white padding
+                        cell.style.color = textColor;
+                        cell.textContent = " ";
+                    } else {
+                        // border
+                        const { color, character } = generate(x, y);
+                        cell.style.color = color;
+                        cell.textContent = character;
+                    }
+                }
+            }
+            // side borders
+            else if (x === boxStartX || x === boxEndX) {
+                const { color, character } = generate(x, y);
+                cell.style.color = color;
+                cell.textContent = character;
+            }
+            // inside
+            else {
+                const lineIndex = y - boxStartY - 1;
+                
+                if (lineIndex >= 0 && lineIndex < lines.length) {
+                    // text line
+                    const line = lines[lineIndex];
+                    // center line
+                    const lineStart = textStartX + Math.floor((textAreaWidth - line.length) / 2);
+                    const charIndex = x - lineStart;
+                    
+                    if (charIndex >= 0 && charIndex < line.length) {
+                        // title char
+                        cell.style.color = textColor;
+                        cell.textContent = line[charIndex];
+                    } else {
+                        // white padding
+                        cell.style.color = textColor;
+                        cell.textContent = " ";
+                    }
+                } else {
+                    // white padding rows
+                    cell.style.color = textColor;
+                    cell.textContent = " ";
+                }
+            }
+        }
+    }
+}
+
+function updateBoardNoTitle() {
+    for (let y = 0; y < animationHeight; y++) {
+        for (let x = 0; x < animationWidth; x++) {
+            const cellIndex = y * animationWidth + x;
+            const cell = animationBoard[cellIndex];
+            
+            const { color, character } = generate(x, y);
+            cell.style.color = color;
+            cell.textContent = character;
         }
     }
 }
@@ -348,3 +713,8 @@ function animationLoop() {
     
     window.requestAnimationFrame(animationLoop);
 }
+
+// cleanup on unload
+window.addEventListener('beforeunload', () => {
+    window.removeEventListener('resize', handleResize);
+});

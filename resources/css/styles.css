@@ -48,6 +48,9 @@
     line-height: 100%;
     overflow-x: hidden;
     overflow-y: hidden;
+    font-size: 14px;
+    width: 100%;
+    text-align: center;
 }
 
 html {
@@ -163,6 +166,8 @@ pre code {
 img {
     border: 3px solid var(--color-primary);
     border-radius: 0px;
+    max-width: 100%;
+    height: auto;
 }
 
 figure {
@@ -181,7 +186,8 @@ figcaption::before {
     border: 3px solid var(--color-primary);
     margin: 20px auto;
     padding: 50px;
-    width: 830px;
+    max-width: 830px;
+    width: calc(100% - 40px);
     background-color: var(--bg-section);
     text-align: left;
     box-sizing: border-box;
@@ -190,11 +196,15 @@ figcaption::before {
 .nav-links {
     margin: 25px 50px;
     text-align: center;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .nav-links a {
     color: var(--text-primary);
     text-decoration: underline;
+    display: inline-block;
+    margin: 2px 0;
 }
 
 .nav-links a:hover {
@@ -222,11 +232,13 @@ figcaption::before {
 .img-right {
     float: right;
     margin-left: 10px;
+    max-width: 40%;
 }
 
 .img-left {
     float: left;
     margin-right: 10px;
+    max-width: 40%;
 }
 
 .img-center {
@@ -250,4 +262,64 @@ figcaption::before {
 .author {
     color: var(--text-secondary);
     font-style: italic;
+}
+
+@media screen and (max-width: 900px) {
+    .outer-container {
+        padding: 30px;
+        margin: 10px;
+        width: calc(100% - 20px);
+    }
+    
+    .nav-links {
+        margin: 15px 20px;
+    }
+    
+    .content {
+        margin: 15px 20px 30px;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .outer-container {
+        padding: 20px;
+        margin: 5px;
+        width: calc(100% - 10px);
+        border-width: 2px;
+    }
+    
+    .nav-links {
+        margin: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .content {
+        margin: 10px;
+    }
+    
+    hr {
+        margin: 20px 0;
+        border-width: 2px;
+    }
+    
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.4rem; }
+    h3 { font-size: 1.2rem; }
+    h4 { font-size: 1.1rem; }
+    h5 { font-size: 0.95rem; }
+    h6 { font-size: 0.85rem; }
+    
+    .img-right,
+    .img-left {
+        float: none;
+        display: block;
+        margin: 10px auto;
+        max-width: 100%;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .outer-container {
+        padding: 15px;
+    }
 }
