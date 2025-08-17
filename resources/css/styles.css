@@ -21,13 +21,6 @@
     font-style: italic;
 }
 
-@font-face {
-    font-family: "Consolas";
-    src: url('/resources/fonts/consolas.ttf');
-    font-weight: normal;
-    font-style: normal;
-}
-
 :root {
     --color-primary: #246978;
     --color-secondary: #f2da72;
@@ -155,8 +148,8 @@ code {
     background-color: var(--bg-code);
     padding: 0.2em 0.4em;
     border-radius: 4px;
-    font-family: 'Consolas', monospace;
-    font-size: 1rem;
+    font-family: monospace;
+    font-size: 0.9rem;
     line-height: 1.2;
     color: var(--text-primary);
 }
@@ -270,14 +263,13 @@ figcaption::before {
     font-synthesis: none;
 }
 
-
 .content {
     margin: 25px 50px 50px;
     text-align: left;
 }
 
 .no-style {
-    text-decoration: none;
+    text-decoration: underline;
     color: inherit;
 }
 
@@ -439,7 +431,8 @@ figcaption::before {
     }
 
     .img-right,
-    .img-left {
+    .img-left,
+    .img-center {
         float: none;
         display: block;
         margin: 10px auto;

@@ -1,0 +1,111 @@
+<!-- projects/typecrab/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>typecrab</title>
+    <link rel="icon" href="/resources/images/icons/icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/resources/css/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/resources/js/scripts.js" defer></script>
+    <script src="/resources/js/card.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</head>
+
+<body data-section=" typecrab ">
+    <div class="outer-container">
+
+        <header id="header-container"></header>
+
+        <section id="content">
+
+            <section>
+                <h2>About</h2>
+                <img src="tui.gif" alt="Test completion and results display on the TUI Interface" width="500" class="img-center">
+                <p>
+                    This project is a lightweight and customizable typing test, inspired by <em>Monkeytype</em>. It is implemented in Rust and features both a <strong>command-line interface (CLI)</strong> and a <strong>web-based user interface (Web UI)</strong>. Users can practice typing in different modes, track performance statistics, and improve their typing speed.
+                </p>
+                <p>
+                    What started as a relatively simple idea for a semester project in <em>Programming in Rust language</em> course, which had no specific requirements and gave us complete creative freedom, evolved into something much more interesting. The main motivation behind this project is that most existing typing tests often focus either on visual effects and gamification or, conversely, on a minimalistic interface without flexibility. This leads to some tools being too heavy and overloaded with unnecessary features, while others are limited in customization and use.
+                </p>
+                <p>
+                    Our project is aimed at creating a fast, cross-platform typing test with minimalistic design, support for custom settings and allowing users to practice typing both <strong>while casually browsing the web</strong> and <strong>while coding in the terminal</strong> during breaks or context switches.
+                </p>
+                <p>
+                    This brings us to the most interesting aspect of our project. The project follows a modular design, separating core logic from user interfaces. The core module contains all shared logic and exposes a <strong>core public API (Core API)</strong>. Both the CLI and Web UI are fully independent components that interact only with the core, not with each other.
+                </p>
+                <pre><code class="language-plaintext">
+         ┌───────────┐                           ┌───────────┐
+         │    cli    │                           │    web    │
+         ├───────────┴───────────────┐           ├───────────┴────────────────┐
+         │                           │           │                            │
+         │       ┌───────────┐       │           │       ┌────────────┐       │
+         │       │           │       │           │       │            │       │
+         │       │    CLI    │       │           │       │   Web UI   │       │
+         │       │           │       │           │       │            │       │
+         │       └─────┬─────┘       │           │       └──────┬─────┘       │
+         │             │             │           │              │             │
+         └─────────────┼─────────────┘           └──────────────┼─────────────┘
+                       │                                        │
+                      uses                                    uses
+                       │                                        │
+                       │    ┌────────────┐                      │
+                       │    │    core    │                      │
+                       │    ├────────────┴─────────────────┐    │
+                       │    │                              │    │
+                       │    │       ┌──────────────┐       │    │
+                       │    │       │              │       │    │
+                       └────┼──────►│   Core API   │◄──────┼────┘
+                            │       │              │       │
+                            │       └──────────────┘       │
+                            │                              │
+                            └──────────────────────────────┘
+ </code></pre>
+                <p>
+                    While I mainly focused on the terminal interface, my colleague <a href="https://github.com/Aldeimeter" class="no-style">Artem Zaitsev</a> primarily concentrated on the web interface. All shared logic resides in the core module. Interfaces only use it through a stable public API, preventing code duplication.
+                </p>
+                <img src="web.gif" alt="Test completion and results display on the Web Interface" width="500" class="img-center">
+                <p>
+                    Both the CLI and Web UI include identical customization options. This ensures that users can seamlessly switch between interfaces without losing any functionality or needing to relearn the workflow.
+                </p>
+                <p>
+                    After completing the project and gaining hands-on experience with Rust, we came to several conclusions: Rust's strong type system and strict compiler checks helped identify many issues at compile time, reducing runtime bugs. Additionally, Cargo - Rust's built-in package manager and build system - significantly made it easy and efficient to manage multiple crates and dependencies within the project.
+                </p>
+                <p>
+                    However, some challenges were encountered. Certain third-party crates lacked sufficient documentation. Moreover, a recurring issue was version fragmentation across libraries: certain required features were available only in specific versions of a crate, while other needed functionality was missing in those same versions and present only in others.
+                </p>
+                <p>
+                    We also faced a challenge where lack of planning at the beginning of the project led to the fact that some of the functions had to be rewritten and adapted for the browser environment later. But we successfully overcame this obstacle.
+                </p>
+                <p>
+                    Speaking about the language itself, compared to other languages, working with Rust on a larger project has its pros and cons. The language provides strong security guarantees and high performance, but requires constant attention to concepts such as ownership, borrowing, and lifetime, especially when working with shared data. Once the code compiles, it tends to run reliably, which is a big advantage. At the same time, the ecosystem is impressive - the variety of crates available for almost any task is surprising and makes development much easier.
+                </p>
+                <p>
+                    Overall, building a complete application in Rust is demanding but rewarding.
+                </p>
+            </section>
+
+            <section>
+                <h2>Links</h2>
+                <ol>
+                    <li>
+                        <a href="https://github.com/admtrv/typecrab" class="no-style">
+                            GitHub Repository
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://admtrv.github.io/typecrab/" class="no-style">
+                            Web Version
+                        </a>
+                    </li>
+                </ol>
+            </section>
+
+        </section>
+    </div>
+</body>
+
+</html>

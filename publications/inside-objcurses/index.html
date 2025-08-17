@@ -828,7 +828,7 @@ char Renderer::luminance_char(const Vec3 &amp;normal, const Vec3 &amp;light, con
                 <p>The cosine similarity between the normal and light vectors gives us a value from -1 to 1. We transform this to 0-1 range (where 0 is fully shadowed and 1 is fully lit), then map it to our gradient. </p>
                 <pre><code class="cpp language-cpp">// config.h
 inline constexpr char CHARS_LUM[] = " .:-=+*#%@";</code></pre>
-                <p>This classic ASCII gradient is get from this <a href="https://paulbourke.net/dataformats/asciiart/">article</a> written by&nbsp;Paul Bourke in February 1997. It progresses from empty space for dark areas through various ASCII characters of increasing visual density for brighter regions. </p>
+                <p>This classic ASCII gradient is get from this <a href="https://paulbourke.net/dataformats/asciiart/" class="no-style">article</a> written by&nbsp;Paul Bourke in February 1997. It progresses from empty space for dark areas through various ASCII characters of increasing visual density for brighter regions. </p>
                 <figure>
                     <img src="grayscale.png" alt="Grayscale value scale from 0 to 10 labeled dark to light" width="300">
                     <figcaption>Grayscale Value Gradient for Lightness Perception</figcaption>
