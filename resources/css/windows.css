@@ -1,0 +1,116 @@
+/* windows.css */
+
+@font-face {
+  font-family: "IBM";
+  src: url('/resources/fonts/AcPlus_IBM_VGA_9x8.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* container */
+.desktop {
+  position: relative;
+  min-height: 60vh;
+}
+
+/* window */
+.win95-window {
+  position: absolute;
+  width: clamp(260px, 90vw, 500px);
+  margin: 0;
+  background: #008080;
+  font-family: "IBM", monospace;
+
+  border-top: 2px solid #c0c0c0;
+  border-left: 2px solid #c0c0c0;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+
+  z-index: 1;
+}
+
+.win95-window.active {
+  z-index: 999;
+}
+
+/* bar */
+.win95-window .title-bar {
+  background: #000080;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  padding: 0.3rem 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: move;
+  user-select: none;
+}
+
+.win95-window .title-bar .title {
+  user-select: none;
+}
+
+.win95-window.dragging .title-bar {
+  cursor: grabbing;
+}
+
+/* contents */
+.win95-window .window-content {
+  padding: 1.4rem;
+  background: #008080;
+  color: #000;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.win95-window pre,
+.win95-window code,
+.win95-window .window-content pre {
+  font-family: inherit;
+  white-space: pre;
+  line-height: 1;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  font-variant-ligatures: none;
+}
+
+/* close button */
+.win95-window .close-btn {
+  background: #c0c0c0;
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1.15rem;
+  text-align: center;
+  user-select: none;
+
+  border-top: 2px solid #dfdfdf;
+  border-left: 2px solid #dadada;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+}
+
+.win95-window .close-btn:hover {
+  background: #ff0000;
+  color: #fff;
+
+  border-right: 2px solid #800000;
+  border-bottom: 2px solid #800000;
+  border-top: 2px solid #000000;
+  border-left: 2px solid #000000;
+
+}
+
+.win95-window .close-btn::selection {
+  background: transparent;
+  color: inherit;
+}
+
+.win95-window .close-btn::-moz-selection {
+  background: transparent;
+  color: inherit;
+}

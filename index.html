@@ -1,5 +1,5 @@
 <!-- index.html -->
-
+ 
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,12 +8,13 @@
     <title>Home</title>
     <link rel="icon" href="/resources/images/icons/icon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/resources/css/styles.css">
+    <link rel="stylesheet" href="/resources/css/windows.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/resources/js/scripts.js" defer></script>
-    <script src="/resources/js/card.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
+    <script src="/resources/js/windows.js" defer></script>
 </head>
 
 <body data-section="home">
@@ -22,9 +23,71 @@
         <header id="header-container"></header>
 
         <section id="content">
+            <div class="desktop" id="desktop">
 
+                <!-- 1 -->
+                <win95-window title="Playing Now" left="30" top="20">
+                    <pre>
+<span style="color:darkgray;"> /\</span>             
+<span style="color:darkgray;"> -*--\</span>          
+<span style="color:darkgray;"> \/   \</span>         
+<span style="color:blue;">    ...</span><span style="color:darkgray;">\</span>        
+<span style="color:blue;">   ’o0Ol</span><span style="color:lime;">+----+</span>  
+<span style="color:blue;">   .oOk’</span><span style="color:lime;">:\    \</span> 
+<span style="color:blue;">   .’;lc. </span><span style="color:lime;">+----+</span>
+<span style="color:blue;">    .’dl;,</span><span style="color:lime;">:    :</span>
+<span style="color:blue;">     ckko,</span><span style="color:lime;">:    :</span>
+<span style="color:blue;">    .okOOx.</span><span style="color:lime;">----+</span>
+<span style="color:blue;">    ’kOOO0O.</span><span style="color:lime;">   :</span>
+<span style="color:orange;">    /</span><span style="color:blue;">ox00OOO</span><span style="color:lime;">   :</span>
+<span style="color:orange;">   /~~\</span><span style="color:blue;">K0oxO</span><span style="color:lime;">---+</span>
+<span style="color:orange;">   ╣BB╠══</span><span style="color:blue;">x,’</span><span style="color:lime;">   :</span>
+<span style="color:blue;">..</span><span style="color:orange;">’\~~/</span><span style="color:blue;">0O0x’</span><span style="color:lime;">   :</span>
+<span style="color:blue;">,.</span><span style="color:orange;">  ==</span><span style="color:blue;">kOOOOd’</span><span style="color:lime;">--+</span>
+<span style="color:blue;">    O0KK0x’</span>     
+<span style="color:blue;">   .oKKKOc.</span>     
+<span style="color:blue;">    KKXXKc</span>      
+<span style="color:blue;">   .l0XlXO;</span>     
+<span style="color:blue;">   .xK.’;Xx</span>     
+<span style="color:blue;">   oKx; .ok.</span>    
+<span style="color:blue;">  .lKc   ,Kc.</span>   
+<span style="color:blue;">  .ok’   .kk.</span>   
+<span style="color:blue;">  ;kK.    .kd.</span>  
+<span style="color:blue;">  cX,      .lc.</span> 
+<span style="color:blue;"> ’xx.       .ol</span> 
+<span style="color:blue;">o’xx,     .l,.’’</span>
+</pre>
+                    <p>Death Stranding 2</p>
+                </win95-window>
+
+                <!-- 2 -->
+                <win95-window title="Studying Now" left="180" top="250">
+                    <pre>
+<span style="color:white;">
+section .data                  
+    msg db "Hello, world!", 0xA
+    len equ $ - msg            
+                               
+section .text                  
+    global _start              
+                               
+_start:                        
+    mov rax, 1                 
+    mov rdi, 1                 
+    mov rsi, msg               
+    mov rdx, len               
+    syscall                    
+                               
+    mov rax, 60                
+    xor rdi, rdi               
+    syscall                    
+</span>
+</pre>
+                    <p>Assembler</p>
+                </win95-window>
+
+            </div>
         </section>
-
     </div>
 </body>
 

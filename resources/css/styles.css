@@ -369,6 +369,11 @@ figcaption::before {
 }
 
 @media screen and (max-width: 600px) {
+
+    html { 
+        font-size: 12px; 
+    }
+
     .outer-container {
         padding: 20px;
         margin: 5px;
@@ -377,41 +382,11 @@ figcaption::before {
 
     .nav-links {
         margin: 10px;
-        font-size: 0.9rem;
         column-gap: 3ch;
     }
 
     .content {
         margin: 10px;
-    }
-
-    hr {
-        margin: 20px 0;
-        border-width: 2px;
-    }
-
-    h1 {
-        font-size: 1.6rem;
-    }
-
-    h2 {
-        font-size: 1.4rem;
-    }
-
-    h3 {
-        font-size: 1.2rem;
-    }
-
-    h4 {
-        font-size: 1.1rem;
-    }
-
-    h5 {
-        font-size: 0.95rem;
-    }
-
-    h6 {
-        font-size: 0.85rem;
     }
 
     .card {
@@ -454,12 +429,15 @@ figcaption::before {
 }
 
 @media screen and (max-width: 400px) {
+    html { 
+        font-size: 11px; 
+    }
+    
     .outer-container {
         padding: 15px;
     }
 
     figcaption {
-        font-size: 0.75rem;
         line-height: 1.3;
     }
 }
