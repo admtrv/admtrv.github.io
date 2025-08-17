@@ -10,6 +10,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setActiveSection();
 
+            scheduleLayoutNavDots();
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(scheduleLayoutNavDots);
+            }
+
+            const nav = document.querySelector('.nav-links');
+            if (window.ResizeObserver && nav) {
+                window._navRO && window._navRO.disconnect();
+                window._navRO = new ResizeObserver(() => scheduleLayoutNavDots());
+                window._navRO.observe(nav);
+            }
+
+            let t;
+            window.addEventListener('resize', () => {
+                clearTimeout(t);
+                t = setTimeout(scheduleLayoutNavDots, 80);
+            });
+
             loadAnimation(() => setUpAnimation());
 
             loadNoCookiesBanner();
@@ -87,4 +105,31 @@ function loadNoCookiesBanner() {
             ok.addEventListener('click', e => { e.preventDefault(); hide(); });
         })
         .catch(err => console.error('Error loading banner:', err));
+}
+
+let _navDotsRaf = 0;
+
+function scheduleLayoutNavDots() {
+    if (_navDotsRaf) return;
+    _navDotsRaf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            layoutNavDots();
+            _navDotsRaf = 0;
+        });
+    });
+}
+
+function layoutNavDots() {
+    const nav = document.querySelector('.nav-links');
+    if (!nav) return;
+
+    const links = [...nav.querySelectorAll(':scope > a')];
+    links.forEach(a => a.classList.remove('show-dot'));
+    if (links.length < 2) return;
+
+    for (let i = 0; i < links.length - 1; i++) {
+        const t1 = Math.round(links[i].getBoundingClientRect().top);
+        const t2 = Math.round(links[i + 1].getBoundingClientRect().top);
+        if (t1 === t2) links[i].classList.add('show-dot');
+    }
 }

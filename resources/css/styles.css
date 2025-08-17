@@ -131,7 +131,6 @@ h6 {
     counter-increment: h6;
 }
 
-
 .numbered h2::before {
     content: counter(h2) ". ";
 }
@@ -151,7 +150,6 @@ h6 {
 .numbered h6::before {
     content: counter(h2) "." counter(h3) "." counter(h4) "." counter(h5) "." counter(h6) ". ";
 }
-
 
 code {
     background-color: var(--bg-code);
@@ -208,15 +206,43 @@ figcaption::before {
 .nav-links {
     margin: 25px 50px;
     text-align: center;
-    white-space: normal;
-    word-wrap: break-word;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: 3ch;
+
+    row-gap: 6px;
+
+    -webkit-tap-highlight-color: transparent;
 }
 
 .nav-links a {
     color: var(--text-primary);
     text-decoration: underline;
     display: inline-block;
-    margin: 2px 0;
+    margin: 0;
+    position: relative;
+
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    outline: none;
+}
+
+.nav-links a:focus,
+.nav-links a:focus-visible,
+.nav-links a:active {
+    outline: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+@media (hover: none) and (pointer: coarse) {
+
+    .nav-links a:hover,
+    .nav-links a:active {
+        color: var(--text-primary);
+        text-decoration: underline;
+    }
 }
 
 .nav-links a:hover {
@@ -226,6 +252,24 @@ figcaption::before {
 .nav-links a.active {
     font-weight: bold;
 }
+
+.nav-links a.show-dot::after {
+    content: " . ";
+    position: absolute;
+    left: calc(100% + 1.5ch);
+    top: 0;
+    transform: translateX(-50%);
+    white-space: pre;
+    color: var(--text-primary);
+    text-decoration: none;
+    pointer-events: none;
+    user-select: none;
+
+    font-weight: 400;
+    font-style: normal;
+    font-synthesis: none;
+}
+
 
 .content {
     margin: 25px 50px 50px;
@@ -342,6 +386,7 @@ figcaption::before {
     .nav-links {
         margin: 10px;
         font-size: 0.9rem;
+        column-gap: 3ch;
     }
 
     .content {
