@@ -1,0 +1,105 @@
+<!-- projects/hellopeer/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>HelloPeer!</title>
+    <link rel="icon" href="/resources/images/icons/icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/resources/css/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/resources/js/scripts.js" defer></script>
+    <script src="/resources/js/card.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</head>
+
+<body data-section="HelloPeer!">
+    <div class="outer-container">
+
+        <header id="header-container"></header>
+
+        <section id="content">
+
+            <section>
+                <h2>About</h2>
+                <img src="hellopeer.png" alt="Terminal screenshot showing HelloPeer p2p app running" width="400" class="img-center">
+                <p>
+                    This project implements a p2p application that allows message exchange between two nodes on a local Ethernet network. Application uses custom protocol based on UDP (User Datagram Protocol) to transfer data and maintain a connection between two devices both acting as senders and receivers.
+                </p>
+                <p>
+                    What started as a university assignment for <em>Computer and Communication Networks</em> course turned into a passion project. After gaining experience with Nokia's high-quality modular networking codebase, I wanted to challenge myself by writing professional C/C++ code inspired by what I observed while working. This became my first hands-on experience with multithreading and developing a CLI interface that runs in a separate thread to keep the program responsive during command input.
+                </p>
+                <p>
+                    The name <code>HelloPeer!</code> immediately came to mind: playful twist on "Hello World!" and a program where two nodes communicate as both senders and receivers.
+                </p>
+                <pre><code class="language-plaintext">
+                                +---------------------+
+                                |        TCU          |
+                                +---------------------+
+                                |        UDP          |
+                                +---------------------+
+                                |  internet protocol  |
+                                +---------------------+
+                                |communication network|
+                                +---------------------+
+ </code></pre>
+                <p>
+                    A separate condition of the assignment was to implement my own custom protocol over UDP that would provide lightweight TCP functionality. I put my soul into its design and called it TCU (Transmission Control over UDP Protocol).
+                </p>
+                <pre><code class="language-plaintext">
+                                1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 
+            0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+           |               Sequence Number                 |     Flags     |
+           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+           |             Length            |           Checksum            |
+           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ </code></pre>
+                <p>
+                    I also developed an elegant flag system for it. Balancing between making it overwhelming and creating a flag system that wouldn't make human sense, I managed to fit into a quite good system of 8 bits:
+                </p>
+                <ol>
+                    <li><strong>SYN</strong> (Synchronize) - Initiates connection</li>
+                    <li><strong>ACK</strong> (Acknowledgment) - Acknowledges received packet</li>
+                    <li><strong>FIN</strong> (Finish) - Indicates termination of connection</li>
+                    <li><strong>NACK</strong> (Negative Acknowledgment) - Acknowledges corrupted packet</li>
+                    <li><strong>DF</strong> (Don't Fragment) - Packet is not fragmented</li>
+                    <li><strong>MF</strong> (More Fragments) - Packet is part of fragmented message and more fragments expected</li>
+                    <li><strong>FL</strong> (File Message) - Packet is file message</li>
+                    <li><strong>KA</strong> (Keep-Alive Message) - Packet is heart-beat message</li>
+                </ol>
+                <p>
+                    It's interesting that I developed my own data type <code>uint24_t</code> to maximally compress the header size. This custom type uses 3 bytes and can represent up to 16 million unique values, which is sufficient for the protocol's sequence numbering requirements while reducing header overhead compared to using a standard <code>uint32_t</code>.
+                </p>
+                <p>
+                    The <code>uint24_t</code> implementation includes overloaded operators for arithmetic, comparison, and conversion. This allows it to be used like a standard integer type, and since it is provided as a header-only library, it can be easily ported to other projects.
+                </p>
+                <img src="wireshark.png" alt="Wireshark screenshot showing captured TCU protocol packets" width="600" class="img-center">
+                <p>
+                    Additionally, I developed a small plugin for <em>Wireshark</em> including a Lua script and coloring rule that work together to recognize TCU protocol packets in entire network flow.
+                </p>
+            </section>
+
+            <section>
+                <h2>Links</h2>
+                <ol>
+                    <li>
+                        <a href="https://github.com/admtrv/HelloPeer" class="no-style">
+                            GitHub Repository
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/admtrv/HelloPeer/blob/main/doc/documentation.pdf" class="no-style">
+                            Technical Documentation
+                        </a>
+                    </li>
+                </ol>
+            </section>
+
+        </section>
+    </div>
+</body>
+
+</html>
