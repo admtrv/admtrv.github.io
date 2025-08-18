@@ -10,7 +10,26 @@
 /* container */
 .desktop {
   position: relative;
-  min-height: 60vh;
+  height: 650px;
+}
+
+#win-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 0;
+  z-index: 9990;
+  pointer-events: none;
+}
+
+#win-layer .win95-window {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.win95-window.global {
+  position: absolute;
 }
 
 /* window */
@@ -105,7 +124,7 @@
   line-height: 1.15rem;
   text-align: center;
   user-select: none;
-  
+
   -webkit-user-select: none;
 
   border-top: 2px solid #dfdfdf;
