@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => console.error('Error loading header:', error));
 });
 
+// animation on hover
 function setActiveSection() {
     const activeSection = document.body.dataset.section;
     const links = document.querySelectorAll('.nav-links a[data-section]');
@@ -75,6 +76,7 @@ function setUpAnimation() {
     }
 }
 
+// no cookies banner
 function loadNoCookiesBanner() {
     const KEY = 'cookies-banner-ack';
     try { if (sessionStorage.getItem(KEY)) return; } catch (e) { }
@@ -107,6 +109,7 @@ function loadNoCookiesBanner() {
         .catch(err => console.error('Error loading banner:', err));
 }
 
+// responsive nav dots 
 let _navDotsRaf = 0;
 
 function scheduleLayoutNavDots() {
@@ -133,3 +136,24 @@ function layoutNavDots() {
         if (t1 === t2) links[i].classList.add('show-dot');
     }
 }
+
+// my photo on about page
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('img[data-hover]').forEach(img => {
+        const orig = img.getAttribute('src');
+        const hover = img.getAttribute('data-hover');
+
+        const buf = new Image();
+        buf.src = hover;
+
+        const toHover = () => { img.src = hover; };
+        const toOrig = () => { img.src = orig; };
+
+        img.addEventListener('mouseenter', toHover);
+        img.addEventListener('mouseleave', toOrig);
+        img.addEventListener('focus', toHover);
+        img.addEventListener('blur', toOrig);
+        img.addEventListener('touchstart', toHover, { passive: true });
+        img.addEventListener('touchend', toOrig);
+    });
+});
