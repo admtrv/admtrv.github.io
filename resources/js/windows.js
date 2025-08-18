@@ -30,6 +30,13 @@ document.addEventListener("DOMContentLoaded", () => {
         win.style.top = clamp(top, 0, maxY) + "px";
       }
 
+      function layoutAll() {
+        document.querySelectorAll(".win95-window").forEach(w => {
+          const desktop = w.closest("#desktop") || document.body;
+          keepInBounds(w, desktop);
+        });
+      }
+
       function makeDraggable(win, desktop) {
         const handle = win.querySelector(".title-bar");
         if (!handle) return;
@@ -57,8 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
           startLeft = parseFloat(cs.left) || 0;
           startTop = parseFloat(cs.top) || 0;
 
-          window.addEventListener("pointermove", onPointerMove);
+          window.addEventListener("pointermove", onPointerMove, { passive: false });
           window.addEventListener("pointerup", onPointerUp, { once: true });
+          window.addEventListener("pointercancel", onPointerUp, { once: true });
           e.preventDefault();
         }
 
@@ -69,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const ny = clamp(startTop + dy, limits.minY, Math.max(limits.maxY, 0));
           win.style.left = Math.round(nx) + "px";
           win.style.top = Math.round(ny) + "px";
+          e.preventDefault();
         }
 
         function onPointerUp(e) {
@@ -77,25 +86,26 @@ document.addEventListener("DOMContentLoaded", () => {
           win.classList.remove("dragging");
         }
 
-        win.addEventListener("mousedown", ev => { if (!ev.target.closest(".close-btn")) bringToFront(win); });
-        win.addEventListener("touchstart", ev => { if (!ev.target.closest(".close-btn")) bringToFront(win); }, { passive: true });
         handle.addEventListener("pointerdown", onPointerDown);
+        win.addEventListener("pointerdown", ev => {
+          if (!ev.target.closest(".close-btn")) bringToFront(win);
+        });
       }
 
       function wireClose(win) {
-        const btn = win.querySelector('.close-btn');
+        const btn = win.querySelector(".close-btn");
         if (!btn) return;
 
-        btn.addEventListener('click', e => {
+        const close = e => {
           e.stopPropagation();
-          win.style.display = 'none';
-        });
+          win.style.display = "none";
+        };
 
-        btn.addEventListener('pointerdown', e => e.stopPropagation());
-        btn.addEventListener('mousedown', e => e.preventDefault());
-        btn.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); }, { passive: false });
+        btn.addEventListener("pointerdown", e => e.stopPropagation());
+        btn.addEventListener("pointerup", close);
+
+        btn.addEventListener("click", close);
       }
-
 
       class Win95Window extends HTMLElement {
         connectedCallback() {
@@ -124,11 +134,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const desktop = this.closest("#desktop") || document.body;
           const win = this.querySelector(".win95-window");
-          win.style.zIndex = ++zTop;
+          bringToFront(win);
 
           makeDraggable(win, desktop);
           wireClose(win);
+
           keepInBounds(win, desktop);
+
+          requestAnimationFrame(() => keepInBounds(win, desktop));
+
+          contentEl.querySelectorAll("img").forEach(img => {
+            if (!img.complete) img.addEventListener("load", () => keepInBounds(win, desktop), { once: true });
+          });
         }
       }
 
@@ -136,15 +153,21 @@ document.addEventListener("DOMContentLoaded", () => {
         customElements.define("win95-window", Win95Window);
       }
 
+      const scheduleInitialLayout = () => {
+        layoutAll();
+        requestAnimationFrame(layoutAll);
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(layoutAll);
+        }
+        window.addEventListener("load", layoutAll, { once: true });
+        setTimeout(layoutAll, 120);
+      };
+      scheduleInitialLayout();
+
       let t;
       window.addEventListener("resize", () => {
         clearTimeout(t);
-        t = setTimeout(() => {
-          document.querySelectorAll(".win95-window").forEach(w => {
-            const desktop = w.closest("#desktop") || document.body;
-            keepInBounds(w, desktop);
-          });
-        }, 80);
+        t = setTimeout(layoutAll, 80);
       });
     });
 });

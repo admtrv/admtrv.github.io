@@ -16,7 +16,11 @@
 /* window */
 .win95-window {
   position: absolute;
-  width: clamp(260px, 90vw, 500px);
+  display: inline-block;
+  width: fit-content;
+  max-width: 90vw;
+  min-width: min(350px, 60vw);
+  box-sizing: border-box;
   margin: 0;
   background: #008080;
   font-family: "IBM", monospace;
@@ -27,6 +31,10 @@
   border-bottom: 2px solid #000000;
 
   z-index: 1;
+
+  /* moving around */
+  will-change: left, top;
+  -webkit-touch-callout: none;
 }
 
 .win95-window.active {
@@ -45,10 +53,18 @@
   align-items: center;
   cursor: move;
   user-select: none;
+
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+
+  /* for correct drag */
+  touch-action: none;
 }
 
 .win95-window .title-bar .title {
   user-select: none;
+
+  -webkit-user-select: none;
 }
 
 .win95-window.dragging .title-bar {
@@ -62,6 +78,7 @@
   color: #000;
   font-size: 0.95rem;
   text-align: center;
+  overflow: auto;
 }
 
 .win95-window pre,
@@ -78,6 +95,7 @@
 /* close button */
 .win95-window .close-btn {
   background: #c0c0c0;
+  color: #000;
   width: 1.4rem;
   height: 1.4rem;
   font-size: 0.9rem;
@@ -87,11 +105,31 @@
   line-height: 1.15rem;
   text-align: center;
   user-select: none;
+  
+  -webkit-user-select: none;
 
   border-top: 2px solid #dfdfdf;
   border-left: 2px solid #dadada;
   border-right: 2px solid #000000;
   border-bottom: 2px solid #000000;
+
+  /* phone */
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  outline: none;
+  box-shadow: none;
+}
+
+.win95-window .close-btn::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+
+  background: transparent;
 }
 
 .win95-window .close-btn:hover {
@@ -102,15 +140,4 @@
   border-bottom: 2px solid #800000;
   border-top: 2px solid #000000;
   border-left: 2px solid #000000;
-
-}
-
-.win95-window .close-btn::selection {
-  background: transparent;
-  color: inherit;
-}
-
-.win95-window .close-btn::-moz-selection {
-  background: transparent;
-  color: inherit;
 }

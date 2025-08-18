@@ -353,6 +353,11 @@ figcaption::before {
 }
 
 @media screen and (max-width: 900px) {
+
+    hr {
+        margin: 30px 0;
+    }
+    
     .outer-container {
         padding: 30px;
         margin: 10px;
@@ -372,6 +377,10 @@ figcaption::before {
 
     html { 
         font-size: 12px; 
+    }
+
+    hr {
+        margin: 20px 0;
     }
 
     .outer-container {
@@ -431,6 +440,10 @@ figcaption::before {
 @media screen and (max-width: 400px) {
     html { 
         font-size: 11px; 
+    }
+
+    hr {
+        margin: 15px 0;
     }
     
     .outer-container {
