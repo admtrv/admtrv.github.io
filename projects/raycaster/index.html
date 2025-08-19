@@ -1,0 +1,349 @@
+<!-- projects/raycaster/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CLI Raycaster</title>
+    <link rel="icon" href="/resources/images/icons/icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/resources/css/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/resources/js/scripts.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</head>
+
+<body data-section="CLI Raycaster">
+    <div class="outer-container">
+
+        <header id="header-container"></header>
+
+        <section id="content">
+
+            <section>
+                <h2>About</h2>
+                <img src="demo.gif" alt="3D maze rendering in terminal using raycasting" width="500" class="img-center">
+                <p>
+                    This project is a terminal-based raycaster demo implemented in pure C, creating a pseudo-3D first-person maze explorer directly in the console. Graphics are displayed using the <code>curses</code> library, which allows efficient drawing in the console.
+                </p>
+                <p>
+                    The motivation behind this project came from a desire to immediately dive into gamedev after finishing the C programming course at university. This was my first "big" project, or at least that's how it seemed to me at the time. I wanted to start my gamedev journey from the very basics, and what could be more fundamental than writing a game demo in C, one of the more challenging languages? Before this, when I was at school I had already created simple 2D games in Pascal: Snake, Tic-Tac-Toe, but those were all flat, 2D experiences. This time, I decided to jump straight into 3D graphics, or how it commonly called "2.5D".
+                </p>
+                <p>
+                    During the university course, we mostly solved small, isolated programming tasks - nothing that prepare for architecting a big project. When I finished implementing the raycaster, it felt like an enormous achievement. The entire code seemed so complex and sophisticated! Looking back now, it's actually just 250 lines of code where all the "magic" lies in the elegant mathematics used to create the 3D illusion. But at that moment, I was incredibly proud of it - so much that I decided to write a complete tutorial explaining how the code works. I even drew explanatory pictures and attached them to the project's <code>README.md</code>. I have immense respect for the pioneers of that era who had the vision and ingenuity to create such technological marvels with limited resources.
+                </p>
+                <p>
+                    Keep in mind that I created this project and tutorial at the very beginning of my programming journey when I was still a very young programmer. Below is the original tutorial, which I decided not to separate into a separate article, but just attach here.
+                </p>
+            </section>
+
+            <section>
+                <h2>Introduction</h2>
+                <p><img src="wolfenstein.jpg" width="350" class="img-center" alt="Wolfenstein 3D gameplay screenshot"></p>
+                <p><strong><a class="no-style" href="https://en.wikipedia.org/wiki/Ray_casting">RayCasting</a></strong> - technique in computer graphics that allows you to create 3D projections based on a 2D plane. This technique was particularly valued in an era when the processing power of computers was limited. It allowed games, the first of which was <a class="no-style" href="https://en.wikipedia.org/wiki/Wolfenstein_3D">Wolfenstein 3D</a>, to achieve an impressive illusion of three-dimensionality.</p>
+                <h2 id="control">Control</h2>
+                <p>To make the player move, we&#39;ll set up a way to watch for key presses on the keyboard. We&#39;re going to look for when someone presses the &#39;W&#39;, &#39;S&#39;, &#39;A&#39;, and &#39;D&#39; keys to move the player.</p>
+                <pre><code class="lang-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">checkKeyState</span><span class="hljs-params">()</span>
+</span>{
+    ...
+}
+</code></pre>
+                <p>Now let&#39;s look at the logic of the movement. Check the labels to see what each key will do.</p>
+                <ul>
+                    <li><code>Esc</code> - exit</li>
+                    <li><code>W (up)</code> - walk forwards</li>
+                    <li><code>S (down)</code> - walk backward</li>
+                    <li><code>A (left)</code> - turn left</li>
+                    <li><code>D (right)</code> - turn right</li>
+                </ul>
+                <p>For this purpose lets define:</p>
+                <pre><code class="lang-c"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> ESC 27                      <span class="hljs-comment">// ESC key code</span></span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> W 119                       <span class="hljs-comment">// W key code</span></span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> A 97                        <span class="hljs-comment">// A key code</span></span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> S 115                       <span class="hljs-comment">// S key code</span></span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> D 100                       <span class="hljs-comment">// D key code</span></span>
+</code></pre>
+                <p>In the code fragment below, we check whether the user is currently pressing the &#39;A&#39; key to perform a left turn. </p>
+                <pre><code class="lang-c"><span class="hljs-keyword">int</span> key = getch();
+
+<span class="hljs-keyword">switch</span> (key)
+{
+    <span class="hljs-keyword">case</span> <span class="hljs-string">A:</span> <span class="hljs-keyword">case</span> <span class="hljs-string">KEY_LEFT:</span>
+            playerDir += (playerSpeed * <span class="hljs-number">0.75</span>f) * frameTime;
+            <span class="hljs-keyword">break</span>;
+
+        ...
+
+}
+</code></pre>
+                <p>After the program recognizes that the &#39;A&#39; key has been pressed (or &#39;D&#39; for turn right), we simple increment or decrement the angle of the player with the player speed. </p>
+                <p>For the up and down logic, we need to get the <code>sin</code> and <code>cos</code> of the player angle to discover the player direction and what we need to increment for the player coordinates to move the player. In the code fragment below, we check whether the user is currently pressing the &#39;W&#39; key to walk forward.</p>
+                <pre><code class="lang-c"><span class="hljs-keyword">case</span> <span class="hljs-string">W:</span> <span class="hljs-keyword">case</span> <span class="hljs-string">KEY_UP:</span>
+    playerX += sinf(playerDir) * playerSpeed * frameTime;
+    playerY += cosf(playerDir) * playerSpeed * frameTime;
+
+    <span class="hljs-keyword">if</span> (map[(<span class="hljs-keyword">int</span>)playerY][(<span class="hljs-keyword">int</span>)playerX] == <span class="hljs-string">'#'</span>)
+    {
+        playerX -= sinf(playerDir) * playerSpeed * frameTime;
+        playerY -= cosf(playerDir) * playerSpeed * frameTime;
+    }
+    <span class="hljs-keyword">break</span>;
+</code></pre>
+                <p>As you can see, we also check for a collision as we move, and if there is one, we stand in the same place.</p>
+                <p>Similarly, we check for pressing the <code>Esc</code> key to exit the program at the right moment and clear the console window.</p>
+                <pre><code class="lang-c">case ESC:                                                       
+    clear();                                                    
+    refresh();                                                  
+    endwin();                                                   
+    <span class="hljs-keyword">exit</span>(<span class="hljs-number">1</span>);
+    <span class="hljs-keyword">break</span>;
+</code></pre>
+                <h2>Logic</h2>
+                <p>RayCasting transforms a two-dimensional map, which is represented as an array of characters, into a three-dimensional projection on the screen. Our character array is a matrix with values <code>#</code> for wall and <code>.</code> for empty space.</p>
+                <pre><code class="lang-c">char <span class="hljs-keyword">map</span>[mapHeight][mapWidth] = {
+    {<span class="hljs-string">"################"</span>},
+    {<span class="hljs-string">"#..#...........#"</span>},
+    {<span class="hljs-string">"#..#....########"</span>},
+    {<span class="hljs-string">"#..#...........#"</span>},
+    {<span class="hljs-string">"#..#...#.......#"</span>},
+    {<span class="hljs-string">"#......#.......#"</span>},
+    {<span class="hljs-string">"#..............#"</span>},
+    {<span class="hljs-string">"###............#"</span>},
+    {<span class="hljs-string">"#..............#"</span>},
+    {<span class="hljs-string">"#......####..###"</span>},
+    {<span class="hljs-string">"#......#.......#"</span>},
+    {<span class="hljs-string">"#......#.......#"</span>},
+    {<span class="hljs-string">"#..............#"</span>},
+    {<span class="hljs-string">"#.....########.#"</span>},
+    {<span class="hljs-string">"#..............#"</span>},
+    {<span class="hljs-string">"################"</span>}
+};
+</code></pre>
+                <p>The logic behind RayCasting is to throw rays in the direction of the player&#39;s view. This is necessary to find walls on the map and check the distance to them in order to calculate the height of the lines from which the objects are drawn. </p>
+                <img src="illustration.png" width="550" class="img-center" alt="Raycasting">
+                <p>The direction of the ray <code>rayDir</code> for drawing a particular stripe on the screen is based on the fact that during the entire pass along the axis X of the screen it is necessary to completely pass the angle of player&#39;s field of view <code>FOV</code>.</p>
+                <pre><code class="lang-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">renderFrame</span><span class="hljs-params">()</span>
+</span>{
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> x = <span class="hljs-number">0</span>; x &lt; screenWidth; x++)
+        {
+            <span class="hljs-keyword">float</span> rayDir = (playerDir + playerFOV / <span class="hljs-number">2.0f</span>) - ((<span class="hljs-keyword">float</span>)x / (<span class="hljs-keyword">float</span>)screenWidth) * playerFOV;
+            <span class="hljs-keyword">float</span> wallDistance = <span class="hljs-number">0.0f</span>;
+
+            <span class="hljs-keyword">float</span> rayX = sinf(rayDir);                                                                              
+            <span class="hljs-keyword">float</span> rayY = cosf(rayDir);
+
+        ...
+        }
+}
+</code></pre>
+                <p>We will search for the distance to the wall iteratively: at the beginning we have a direction in which we want to check for the existence of an object, then we cyclically, in small steps <code>wallDistance += 0.1f</code> go in this direction. In the end, either the ray has collided with an object <code>hitWallFlag</code>, or it has gone beyond the radius of visibility <code>playersMaxDepth</code>.</p>
+                <pre><code class="lang-c">int hitWallFlag = <span class="hljs-number">0</span><span class="hljs-comment">;                                                                                    </span>
+int hitEdgeFlag = <span class="hljs-number">0</span><span class="hljs-comment">;   </span>
+
+while (!hitWallFlag &amp;&amp; wallDistance &lt; playersMaxDepth)                                                  
+{
+    wallDistance += <span class="hljs-number">0</span>.<span class="hljs-number">1</span>f<span class="hljs-comment">;                                                                               </span>
+
+    int <span class="hljs-keyword">distanceX </span>= (int)(playerX + rayX * wallDistance)<span class="hljs-comment">;                                              </span>
+    int <span class="hljs-keyword">distanceY </span>= (int)(playerY + rayY * wallDistance)<span class="hljs-comment">;                                             </span>
+
+    if (<span class="hljs-keyword">distanceX </span>&lt; <span class="hljs-number">0</span> <span class="hljs-title">||</span> <span class="hljs-keyword">distanceX </span>&gt;= mapWidth <span class="hljs-title">||</span> <span class="hljs-keyword">distanceY </span>&lt; <span class="hljs-number">0</span> <span class="hljs-title">||</span> <span class="hljs-keyword">distanceY </span>&gt;= mapHeight)              
+    { 
+        hitWallFlag = <span class="hljs-number">1</span><span class="hljs-comment">;                                                                                </span>
+        wallDistance = playersMaxDepth<span class="hljs-comment">;</span>
+    }
+    else if ( map[<span class="hljs-keyword">distanceY][distanceX] </span>== <span class="hljs-string">'#'</span>)                                                         
+    { 
+        hitWallFlag = <span class="hljs-number">1</span><span class="hljs-comment">;</span>
+
+        ...
+    }
+
+    for (int y = <span class="hljs-number">0</span><span class="hljs-comment">; y &lt; screenHeight; y++)</span>
+    {
+
+        ...
+    }
+}
+</code></pre>
+                <p>Well, now we have everything we need to create the illusion of a third dimension!</p>
+                <h2>Rendering</h2>
+                <p>Having the distance <code>d</code> to the object in the required direction, we can calculate its height <code>b&#39;</code> relative to the screen. So, we need to understand how the height of objects changes when the distance to them changes.</p>
+                <img src="math.png" width="500" class="img-center" alt="Triangles">
+                <p>To draw the stripe, we need to set two Y axis coordinates: the first one is the point where the wall starts and the ceiling ends, and the second one is where the wall ends and the floor starts. Let&#39;s make these two points symmetrical about the center in height by setting them as is below.</p>
+                <img src="cmd.png" width="400" class="img-center" alt="Stripes">
+                <p>It can be seen that if the distance to the wall becomes bigger, these points go to the center and the height of the stripe becomes smaller, so the sky and the floor cover almost all the space. And if the distance gets smaller, these points go to the borders and the stripe gets bigger. Let&#39;s take a look at how this is realized.</p>
+                <pre><code class="lang-c">int ceilingHeight = (<span class="hljs-name">float</span>)(<span class="hljs-name">screenHeight/2</span>.<span class="hljs-number">0</span>) - screenHeight / ((<span class="hljs-name">float</span>)wallDistance)<span class="hljs-comment">;                 </span>
+int floorHeight = (<span class="hljs-name">float</span>)(<span class="hljs-name">screenHeight/2</span>.<span class="hljs-number">0</span>) + screenHeight / ((<span class="hljs-name">float</span>)wallDistance)<span class="hljs-comment">;                    </span>
+
+for (<span class="hljs-name">int</span> y = <span class="hljs-number">0</span><span class="hljs-comment">; y &lt; screenHeight; y++)</span>
+{
+    if (<span class="hljs-name">y</span> &lt; ceilingHeight)                                                                            
+    {
+        float d = <span class="hljs-number">1.0</span>f + ((<span class="hljs-name">float</span>)y - screenHeight / <span class="hljs-number">2.0</span>) / ((<span class="hljs-name">float</span>)screenHeight / <span class="hljs-number">2.0</span>)<span class="hljs-comment">;</span>
+        int gradientIndex = (<span class="hljs-name">int</span>)(<span class="hljs-name">d</span> * gradientSize);
+        if (gradientIndex &lt; 0) gradientIndex = 0;
+        if (gradientIndex &gt;= gradientSize) gradientIndex = gradientSize - 1;
+
+        char ceilingShader = gradient2[gradientIndex];
+
+        attron(COLOR_PAIR(2)); 
+        mvprintw(y,x,"%c",ceilingShader);
+        attroff(COLOR_PAIR(2));
+    } 
+    else if (y &gt;= ceilingHeight &amp;&amp; y &lt;= floorHeight)                                                  
+    {
+        int gradientIndex = (int)((wallDistance / playersMaxDepth) * gradientSize)<span class="hljs-comment">;</span>
+        if (<span class="hljs-name">gradientIndex</span> &lt; <span class="hljs-number">0</span>) gradientIndex = <span class="hljs-number">0</span><span class="hljs-comment">;</span>
+        if (<span class="hljs-name">gradientIndex</span> &gt;= gradientSize) gradientIndex = gradientSize - <span class="hljs-number">1</span><span class="hljs-comment">;</span>
+
+        char wallShader = gradient1[gradientIndex]<span class="hljs-comment">;</span>
+        if (<span class="hljs-name">hitEdgeFlag</span>) wallShader = ' '<span class="hljs-comment">;</span>
+
+        attron(<span class="hljs-name">COLOR_PAIR</span>(<span class="hljs-number">1</span>))<span class="hljs-comment">;</span>
+        mvprintw(<span class="hljs-name">y</span>,x,<span class="hljs-string">"%c"</span>,wallShader)<span class="hljs-comment">;</span>
+        attroff(<span class="hljs-name">COLOR_PAIR</span>(<span class="hljs-number">1</span>))<span class="hljs-comment">;</span>
+    } 
+    else                                                                                           
+    {
+        float d = <span class="hljs-number">1.0</span>f - ((<span class="hljs-name">float</span>)y - screenHeight / <span class="hljs-number">2.0</span>) / ((<span class="hljs-name">float</span>)screenHeight / <span class="hljs-number">2.0</span>)<span class="hljs-comment">;</span>
+        int gradientIndex = (<span class="hljs-name">int</span>)(<span class="hljs-name">d</span> * gradientSize);
+        if (gradientIndex &lt; 0) gradientIndex = 0;
+        if (gradientIndex &gt;= gradientSize) gradientIndex = gradientSize - 1;
+
+        char floorShader = gradient2[gradientIndex];
+
+        attron(COLOR_PAIR(3));
+        mvprintw(y,x,"%c",floorShader);
+        attroff(COLOR_PAIR(3));
+    } 
+}
+</code></pre>
+                <p>Here we calculate the brightness level of the character that will be displayed in each specific cell of the console based on the distance to the object. The characters themselves are taken from arrays, where gradients from the brightest to the darkest are already given.</p>
+                <pre><code class="lang-c"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> gradientSize 10        </span>
+<span class="hljs-keyword">char</span> gradient1[gradientSize]=<span class="hljs-string">"@%#+=*:-. "</span>;  
+<span class="hljs-keyword">char</span> gradient2[gradientSize]=<span class="hljs-string">"&amp;Oi?+~&gt;:. "</span>;
+</code></pre>
+                <p>And the colors were initialized in the <code>main</code> function using the <code>init_pair</code> function.</p>
+                <pre><code class="lang-c"><span class="hljs-selector-tag">start_color</span>();                            
+<span class="hljs-selector-tag">init_pair</span>(<span class="hljs-number">1</span>, COLOR_RED, COLOR_BLACK);       
+<span class="hljs-selector-tag">init_pair</span>(<span class="hljs-number">2</span>, COLOR_BLUE, COLOR_BLACK);      
+<span class="hljs-selector-tag">init_pair</span>(<span class="hljs-number">3</span>, COLOR_BLACK + <span class="hljs-number">8</span>, COLOR_BLACK);
+</code></pre>
+                <h2>Edge Rendering</h2>
+                <p>Now let&#39;s look at the display of wall edges. If we have determined that there has been a collision with a wall, we can immediately determine its location and the location of its four edges.
+                    So we have four vectors that point from the viewer exactly into the edges of the wall. If the angle between the emitted ray and one of these vectors becomes small, we will take this part of the wall as an edge and not draw it.</p>
+                <img src="edge.png" width="350" class="img-center" alt="Edges">
+                <p>The minimum angle between vectors is achieved when their scalar product is maximized. We will look for the scalar product between the direction vector and the vectors leading into the edges of the wall.</p>
+                <pre><code class="lang-c"><span class="hljs-keyword">float</span> edgeDistance[<span class="hljs-number">4</span>]; 
+<span class="hljs-keyword">float</span> <span class="hljs-keyword">dotProduct</span>[<span class="hljs-number">4</span>];
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">4</span>; i++)
+{
+    <span class="hljs-keyword">int</span> edgeX = i % <span class="hljs-number">2</span>;
+    <span class="hljs-keyword">int</span> edgeY = i / <span class="hljs-number">2</span>;
+
+    <span class="hljs-keyword">float</span> vectorX = (<span class="hljs-keyword">float</span>)distanceX + edgeX - playerX;
+    <span class="hljs-keyword">float</span> vectorY = (<span class="hljs-keyword">float</span>)distanceY + edgeY - playerY;
+
+    edgeDistance[i] = sqrtf(vectorX * vectorX + vectorY * vectorY);
+    <span class="hljs-keyword">dotProduct</span>[i] = (rayX * vectorX / edgeDistance[i]) + (rayY * vectorY / edgeDistance[i]);
+}
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">4</span>; i++)
+{
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> j = i + <span class="hljs-number">1</span>; j &lt; <span class="hljs-number">4</span>; j++) 
+    {
+        <span class="hljs-keyword">if</span> (edgeDistance[j] &lt; edgeDistance[i]) 
+        {
+            <span class="hljs-keyword">float</span> temp = edgeDistance[j];
+            edgeDistance[j] = edgeDistance[i];
+            edgeDistance[i] = temp;
+
+            temp = <span class="hljs-keyword">dotProduct</span>[j];
+            <span class="hljs-keyword">dotProduct</span>[j] = <span class="hljs-keyword">dotProduct</span>[i];
+            <span class="hljs-keyword">dotProduct</span>[i] = temp;
+        }
+    }
+}
+
+<span class="hljs-keyword">float</span> proximity = <span class="hljs-number">0.004</span>f;
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">2</span>; i++)
+{
+    <span class="hljs-keyword">if</span> (acosf(<span class="hljs-keyword">dotProduct</span>[i]) &lt; proximity) 
+    {
+        hitEdgeFlag = <span class="hljs-number">1</span>;
+        <span class="hljs-keyword">break</span>;
+    }
+}
+</code></pre>
+                <p>Now we can see the edges of the walls.</p>
+                <h2>Game Cykle</h2>
+                <p>The projection should be redrawn at each iteration of the rendering. That&#39;s why our game loop will consist of an infinitely running <code>while(1)</code>, which every iteration will calculate the time change per frame, check for keyboard presses, render a new frame based on the new changes, overlay the useful information and statistics on top of it, and display it all on the screen from the buffer. Here&#39;s what the realization of this looks like in code.</p>
+                <pre><code class="lang-c"><span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>)  
+{
+        timeAfter = clock();                                           
+        frameTime = (<span class="hljs-keyword">float</span>)(timeAfter - timeBefore) / CLOCKS_PER_SEC;  
+        timeBefore = timeAfter;                                        
+
+        <span class="hljs-built_in">map</span>[(<span class="hljs-keyword">int</span>)playerY][(<span class="hljs-keyword">int</span>)playerX] = <span class="hljs-string">'.'</span>;                       
+
+        checkKeyState();                                              
+
+        <span class="hljs-built_in">map</span>[(<span class="hljs-keyword">int</span>)playerY][(<span class="hljs-keyword">int</span>)playerX] = <span class="hljs-string">'o'</span>;                       
+
+        renderFrame();                                                
+
+        displayStats();                                                
+
+        refresh();                                                     
+}
+</code></pre>
+                <p>That&#39;s all, thank you for your attention!</p>
+
+            </section>
+
+            <section>
+                <h2>Links</h2>
+                <ol>
+                    <li>
+                        <a href="https://github.com/admtrv/RayCasting" class="no-style">
+                            GitHub Repository
+                        </a>
+                    </li>
+                    <li>
+                        Sources and Inspirations:
+                        <ol>
+                            <li>
+                                <a href="https://github.com/OneLoneCoder/CommandLineFPS" class="no-style">
+                                    CommandLineFPS
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/vinibiavatti1/RayCastingTutorial" class="no-style">
+                                    RayCastingTutorial
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/3DSage/OpenGL-Raycaster_v1?tab=readme-ov-file" class="no-style">
+                                    OpenGL-Raycaster_v1
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.youtube.com/watch?v=94YOd0gimF8" class="no-style">
+                                    Raycasting game engine with ASCII display
+                                </a>
+                            </li>
+                        </ol>
+                    </li>
+                </ol>
+            </section>
+
+        </section>
+    </div>
+</body>
+
+</html>
