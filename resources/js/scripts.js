@@ -157,3 +157,31 @@ document.addEventListener('DOMContentLoaded', () => {
         img.addEventListener('touchend', toOrig);
     });
 });
+
+// page 404
+(function () {
+    const input = document.getElementById('ascii-text');
+    const out = document.getElementById('ascii-output');
+    if (!input || !out || typeof figlet === 'undefined') return;
+
+    figlet.defaults({ fontPath: 'https://unpkg.com/figlet@1.6.0/fonts' });
+
+    let ready = false;
+
+    function render() {
+        if (!ready) return;
+        const txt = input.value.trim();
+        if (!txt) { out.textContent = ''; return; }
+        figlet.text(txt, { font: 'Graffiti' }, function (err, data) {
+            out.textContent = err ? '' : data;
+        });
+    }
+
+    input.addEventListener('input', render);
+    input.addEventListener('change', render);
+
+    figlet.preloadFonts(['Graffiti'], function (err) {
+        ready = !err;
+        render();
+    });
+})();
