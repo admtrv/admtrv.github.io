@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const desc = this.getAttribute("desc");
           const img = this.getAttribute("image");
           const alt = this.getAttribute("alt");
+          const height = this.getAttribute("height");
 
           const template = document.getElementById("project-card-template").content.cloneNode(true);
           const a = template.querySelector("a");
@@ -27,6 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
           template.querySelector("img").src = img;
           template.querySelector("img").alt = alt;
+          if (height) {
+            template.querySelector("img").height = height;
+          }
           template.querySelector(".title").textContent = title;
           template.querySelector(".description").innerHTML = desc;
 

@@ -64,26 +64,29 @@
                 <win95-window title="Studying Now" left="250" top="250" left-xs="50" top-xs="300">
                     <pre>
 <span style="color:white;">
-section .data                  
-    msg db "Hello, world!", 0xA
-    len equ $ - msg            
-                               
-section .text                  
-    global _start              
-                               
-_start:                        
-    mov rax, 1                 
-    mov rdi, 1                 
-    mov rsi, msg               
-    mov rdx, len               
-    syscall                    
-                               
-    mov rax, 60                
-    xor rdi, rdi               
-    syscall                    
+#version 330 core                        
+                                         
+in vec3 fragPos;                         
+in vec3 normal;                          
+                                         
+uniform vec3 lightPos;                   
+uniform vec3 lightColor;                 
+                                         
+out vec4 fragColor;                      
+                                         
+void main()                              
+{                                        
+  vec3 n = normalize(normal);            
+  vec3 l = normalize(lightPos - fragPos);
+                                         
+  float d = max(dot(n, l), 0.0);         
+  vec3 res = d * lightColor;             
+                                         
+  fragColor = vec4(res, 1.0);            
+}                                        
 </span>
 </pre>
-                    <p>Assembler</p>
+                    <p>Graphics Programming</p>
                 </win95-window>
 
             </div>
