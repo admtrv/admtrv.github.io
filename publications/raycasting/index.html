@@ -1,0 +1,326 @@
+<!-- raycasting/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>How Early Games Faked 3D: Writing a Command Line Raycaster in C</title>
+    <link rel="icon" href="/resources/images/icons/icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/resources/css/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/resources/js/scripts.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</head>
+
+<body data-section="How Early Games Faked 3D: Writing a Command Line Raycaster in C">
+    <div class="outer-container">
+
+        <header id="header-container"></header>
+
+        <section id="content">
+
+            <div class="numbered">
+                <h2>Introduction</h2>
+                <figure>
+                    <img src="wolfenstein.jpg" alt="Wolfenstein 3D gameplay screenshot" width="350">
+                    <figcaption>Wolfenstein 3D</figcaption>
+                </figure>
+                <p><strong><a class="no-style" href="https://en.wikipedia.org/wiki/Ray_casting">RayCasting</a></strong> - technique in computer graphics that allows you to create 3D projections based on a 2D plane. This technique was particularly valued in an era when the processing power of computers was limited. It allowed games, the first of which was <a class="no-style" href="https://en.wikipedia.org/wiki/Wolfenstein_3D">Wolfenstein 3D</a>, to achieve an impressive illusion of three-dimensionality.</p>
+                <figure>
+                    <img src="demo.gif" alt="3D maze rendering in terminal using raycasting" width="500">
+                    <figcaption>Command Line RayCasting Demo</figcaption>
+                </figure>
+                <h2 id="control">Control</h2>
+                <p>To make the player move, we&#39;ll set up a way to watch for key presses on the keyboard. We&#39;re going to look for when someone presses the &#39;W&#39;, &#39;S&#39;, &#39;A&#39;, and &#39;D&#39; keys to move the player.</p>
+                <pre><code class="c language-c">void checkKeyState()
+{
+    ...
+}</code></pre>
+                <p>Now let&#39;s look at the logic of the movement. Check the labels to see what each key will do.</p>
+                <ul>
+                    <li><code>Esc</code> - exit</li>
+                    <li><code>W (up)</code> - walk forwards</li>
+                    <li><code>S (down)</code> - walk backward</li>
+                    <li><code>A (left)</code> - turn left</li>
+                    <li><code>D (right)</code> - turn right</li>
+                </ul>
+                <p>For this purpose lets define:</p>
+                <pre><code class="c language-c">#define ESC 27                      // ESC key code
+#define W 119                       // W key code
+#define A 97                        // A key code
+#define S 115                       // S key code
+#define D 100                       // D key code</code></pre>
+                <p>In the code fragment below, we check whether the user is currently pressing the &#39;A&#39; key to perform a left turn. </p>
+                <pre><code class="c language-c">int key = getch();
+
+switch (key)
+{
+    case A: case KEY_LEFT:
+            playerDir += (playerSpeed * 0.75f) * frameTime;
+            break;
+
+        ...
+
+}</code></pre>
+                <p>After the program recognizes that the &#39;A&#39; key has been pressed (or &#39;D&#39; for turn right), we simple increment or decrement the angle of the player with the player speed. </p>
+                <p>For the up and down logic, we need to get the <code>sin</code> and <code>cos</code> of the player angle to discover the player direction and what we need to increment for the player coordinates to move the player. In the code fragment below, we check whether the user is currently pressing the &#39;W&#39; key to walk forward.</p>
+                <pre><code class="c language-c">case W: case KEY_UP:
+    playerX += sinf(playerDir) * playerSpeed * frameTime;
+    playerY += cosf(playerDir) * playerSpeed * frameTime;
+
+    if (map[(int)playerY][(int)playerX] == '#')
+    {
+        playerX -= sinf(playerDir) * playerSpeed * frameTime;
+        playerY -= cosf(playerDir) * playerSpeed * frameTime;
+    }
+    break;</code></pre>
+                <p>As you can see, we also check for a collision as we move, and if there is one, we stand in the same place.</p>
+                <p>Similarly, we check for pressing the <code>Esc</code> key to exit the program at the right moment and clear the console window.</p>
+                <pre><code class="c language-c">case ESC:
+    clear();
+    refresh();
+    endwin();
+    exit(1);
+    break;</code></pre>
+                <h2>Logic</h2>
+                <p>RayCasting transforms a two-dimensional map, which is represented as an array of characters, into a three-dimensional projection on the screen. Our character array is a matrix with values <code>#</code> for wall and <code>.</code> for empty space.</p>
+                <pre><code class="c language-c">char map[mapHeight][mapWidth] = {
+    {"################"},
+    {"#..#...........#"},
+    {"#..#....########"},
+    {"#..#...........#"},
+    {"#..#...#.......#"},
+    {"#......#.......#"},
+    {"#..............#"},
+    {"###............#"},
+    {"#..............#"},
+    {"#......####..###"},
+    {"#......#.......#"},
+    {"#......#.......#"},
+    {"#..............#"},
+    {"#.....########.#"},
+    {"#..............#"},
+    {"################"}
+};</code></pre>
+                <p>The logic behind RayCasting is to throw rays in the direction of the player&#39;s view. This is necessary to find walls on the map and check the distance to them in order to calculate the height of the lines from which the objects are drawn. </p>
+                <figure>
+                    <img src="illustration.png" alt="Raycasting" width="550">
+                    <figcaption>Casting Rays from the Player</figcaption>
+                </figure>
+                <p>The direction of the ray <code>rayDir</code> for drawing a particular stripe on the screen is based on the fact that during the entire pass along the axis X of the screen it is necessary to completely pass the angle of player&#39;s field of view <code>FOV</code>.</p>
+                <pre><code class="c language-c">void renderFrame()
+{
+        for (int x = 0; x &lt; screenWidth; x++)
+        {
+            float rayDir = (playerDir + playerFOV / 2.0f) - ((float)x / (float)screenWidth) * playerFOV;
+            float wallDistance = 0.0f;
+
+            float rayX = sinf(rayDir);
+            float rayY = cosf(rayDir);
+
+        ...
+        }
+}</code></pre>
+                <p>We will search for the distance to the wall iteratively: at the beginning we have a direction in which we want to check for the existence of an object, then we cyclically, in small steps <code>wallDistance += 0.1f</code> go in this direction. In the end, either the ray has collided with an object <code>hitWallFlag</code>, or it has gone beyond the radius of visibility <code>playersMaxDepth</code>.</p>
+                <pre><code class="c language-c">int hitWallFlag = 0;
+int hitEdgeFlag = 0;
+
+while (!hitWallFlag &amp;&amp; wallDistance &lt; playersMaxDepth)
+{
+    wallDistance += 0.1f;
+
+    int distanceX = (int)(playerX + rayX * wallDistance);
+    int distanceY = (int)(playerY + rayY * wallDistance);
+
+    if (distanceX &lt; 0 || distanceX &gt;= mapWidth || distanceY &lt; 0 || distanceY &gt;= mapHeight)
+    {
+        hitWallFlag = 1;
+        wallDistance = playersMaxDepth;
+    }
+    else if ( map[distanceY][distanceX] == '#')
+    {
+        hitWallFlag = 1;
+
+        ...
+    }
+
+    for (int y = 0; y &lt; screenHeight; y++)
+    {
+
+        ...
+    }
+}</code></pre>
+                <p>Well, now we have everything we need to create the illusion of a third dimension!</p>
+                <h2>Rendering</h2>
+                <p>Having the distance <code>d</code> to the object in the required direction, we can calculate its height <code>b&#39;</code> relative to the screen. So, we need to understand how the height of objects changes when the distance to them changes.</p>
+                <figure>
+                    <img src="math.png" alt="Triangles" width="500">
+                    <figcaption>Wall Height and Distance</figcaption>
+                </figure>
+                <p>To draw the stripe, we need to set two Y axis coordinates: the first one is the point where the wall starts and the ceiling ends, and the second one is where the wall ends and the floor starts. Let&#39;s make these two points symmetrical about the center in height by setting them as is below.</p>
+                <figure>
+                    <img src="cmd.png" alt="Stripes" width="400">
+                    <figcaption>Wall Stripe on the Screen</figcaption>
+                </figure>
+                <p>It can be seen that if the distance to the wall becomes bigger, these points go to the center and the height of the stripe becomes smaller, so the sky and the floor cover almost all the space. And if the distance gets smaller, these points go to the borders and the stripe gets bigger. Let&#39;s take a look at how this is realized.</p>
+                <pre><code class="c language-c">int ceilingHeight = (float)(screenHeight/2.0) - screenHeight / ((float)wallDistance);
+int floorHeight = (float)(screenHeight/2.0) + screenHeight / ((float)wallDistance);
+
+for (int y = 0; y &lt; screenHeight; y++)
+{
+    if (y &lt; ceilingHeight)
+    {
+        float d = 1.0f + ((float)y - screenHeight / 2.0) / ((float)screenHeight / 2.0);
+        int gradientIndex = (int)(d * gradientSize);
+        if (gradientIndex &lt; 0) gradientIndex = 0;
+        if (gradientIndex &gt;= gradientSize) gradientIndex = gradientSize - 1;
+
+        char ceilingShader = gradient2[gradientIndex];
+
+        attron(COLOR_PAIR(2));
+        mvprintw(y,x,"%c",ceilingShader);
+        attroff(COLOR_PAIR(2));
+    }
+    else if (y &gt;= ceilingHeight &amp;&amp; y &lt;= floorHeight)
+    {
+        int gradientIndex = (int)((wallDistance / playersMaxDepth) * gradientSize);
+        if (gradientIndex &lt; 0) gradientIndex = 0;
+        if (gradientIndex &gt;= gradientSize) gradientIndex = gradientSize - 1;
+
+        char wallShader = gradient1[gradientIndex];
+        if (hitEdgeFlag) wallShader = ' ';
+
+        attron(COLOR_PAIR(1));
+        mvprintw(y,x,"%c",wallShader);
+        attroff(COLOR_PAIR(1));
+    }
+    else
+    {
+        float d = 1.0f - ((float)y - screenHeight / 2.0) / ((float)screenHeight / 2.0);
+        int gradientIndex = (int)(d * gradientSize);
+        if (gradientIndex &lt; 0) gradientIndex = 0;
+        if (gradientIndex &gt;= gradientSize) gradientIndex = gradientSize - 1;
+
+        char floorShader = gradient2[gradientIndex];
+
+        attron(COLOR_PAIR(3));
+        mvprintw(y,x,"%c",floorShader);
+        attroff(COLOR_PAIR(3));
+    }
+}</code></pre>
+                <p>Here we calculate the brightness level of the character that will be displayed in each specific cell of the console based on the distance to the object. The characters themselves are taken from arrays, where gradients from the brightest to the darkest are already given.</p>
+                <pre><code class="c language-c">#define gradientSize 10
+char gradient1[gradientSize]="@%#+=*:-. ";
+char gradient2[gradientSize]="&amp;Oi?+~&gt;:. ";</code></pre>
+                <p>And the colors were initialized in the <code>main</code> function using the <code>init_pair</code> function.</p>
+                <pre><code class="c language-c">start_color();
+init_pair(1, COLOR_RED, COLOR_BLACK);
+init_pair(2, COLOR_BLUE, COLOR_BLACK);
+init_pair(3, COLOR_BLACK + 8, COLOR_BLACK);</code></pre>
+                <h2>Edge Rendering</h2>
+                <p>Now let&#39;s look at the display of wall edges. If we have determined that there has been a collision with a wall, we can immediately determine its location and the location of its four edges.
+                    So we have four vectors that point from the viewer exactly into the edges of the wall. If the angle between the emitted ray and one of these vectors becomes small, we will take this part of the wall as an edge and not draw it.</p>
+                <figure>
+                    <img src="edge.png" alt="Edges" width="350">
+                    <figcaption>Vectors to the Wall Edges</figcaption>
+                </figure>
+                <p>The minimum angle between vectors is achieved when their scalar product is maximized. We will look for the scalar product between the direction vector and the vectors leading into the edges of the wall.</p>
+                <pre><code class="c language-c">float edgeDistance[4];
+float dotProduct[4];
+
+for (int i = 0; i &lt; 4; i++)
+{
+    int edgeX = i % 2;
+    int edgeY = i / 2;
+
+    float vectorX = (float)distanceX + edgeX - playerX;
+    float vectorY = (float)distanceY + edgeY - playerY;
+
+    edgeDistance[i] = sqrtf(vectorX * vectorX + vectorY * vectorY);
+    dotProduct[i] = (rayX * vectorX / edgeDistance[i]) + (rayY * vectorY / edgeDistance[i]);
+}
+
+for (int i = 0; i &lt; 4; i++)
+{
+    for (int j = i + 1; j &lt; 4; j++)
+    {
+        if (edgeDistance[j] &lt; edgeDistance[i])
+        {
+            float temp = edgeDistance[j];
+            edgeDistance[j] = edgeDistance[i];
+            edgeDistance[i] = temp;
+
+            temp = dotProduct[j];
+            dotProduct[j] = dotProduct[i];
+            dotProduct[i] = temp;
+        }
+    }
+}
+
+float proximity = 0.004f;
+
+for (int i = 0; i &lt; 2; i++)
+{
+    if (acosf(dotProduct[i]) &lt; proximity)
+    {
+        hitEdgeFlag = 1;
+        break;
+    }
+}</code></pre>
+                <p>Now we can see the edges of the walls.</p>
+                <h2>Game Cycle</h2>
+                <p>The projection should be redrawn at each iteration of the rendering. That&#39;s why our game loop will consist of an infinitely running <code>while(1)</code>, which every iteration will calculate the time change per frame, check for keyboard presses, render a new frame based on the new changes, overlay the useful information and statistics on top of it, and display it all on the screen from the buffer. Here&#39;s what the realization of this looks like in code.</p>
+                <pre><code class="c language-c">while(1)
+{
+        timeAfter = clock();
+        frameTime = (float)(timeAfter - timeBefore) / CLOCKS_PER_SEC;
+        timeBefore = timeAfter;
+
+        map[(int)playerY][(int)playerX] = '.';
+
+        checkKeyState();
+
+        map[(int)playerY][(int)playerX] = 'o';
+
+        renderFrame();
+
+        displayStats();
+
+        refresh();
+}</code></pre>
+                <p>That&#39;s all, thank you for your attention!</p>
+
+                <h2>Sources and Inspirations</h2>
+                <ol>
+                    <li>
+                        <a href="https://github.com/OneLoneCoder/CommandLineFPS" class="no-style">
+                            CommandLineFPS
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/vinibiavatti1/RayCastingTutorial" class="no-style">
+                            RayCastingTutorial
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/3DSage/OpenGL-Raycaster_v1?tab=readme-ov-file" class="no-style">
+                            OpenGL-Raycaster_v1
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.youtube.com/watch?v=94YOd0gimF8" class="no-style">
+                            Raycasting game engine with ASCII display
+                        </a>
+                    </li>
+                </ol>
+            </div>
+
+        </section>
+
+    </div>
+</body>
+
+</html>
